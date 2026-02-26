@@ -80,19 +80,7 @@ position:relative;display:flex;flex-direction:column;
 transition:background .4s;
 }
 
-/* ═══════════════════════════════════════
-STATUS BAR
-═══════════════════════════════════════ */
-.status-bar{
-padding-top:var(–safe-top);
-padding-left:calc(20px + var(–safe-left));
-padding-right:calc(20px + var(–safe-right));
-padding-bottom:8px;
-display:flex;justify-content:space-between;align-items:center;
-flex-shrink:0;position:relative;z-index:10;
-}
-.status-time{font-size:15px;font-weight:600;letter-spacing:-.3px;}
-.status-icons{display:flex;gap:6px;align-items:center;font-size:12px;}
+/* status-bar kaldırıldı — telefonun kendi durum çubuğu kullanılıyor */
 
 /* ═══════════════════════════════════════
 SCREENS
@@ -102,54 +90,81 @@ SCREENS
 position:absolute;inset:0;
 overflow-y:auto;overflow-x:hidden;
 overscroll-behavior:none;-webkit-overflow-scrolling:touch;
-padding:0 0 var(–tab-total);
+/* floating bar için alt boşluk */
+padding:0 0 calc(var(–tab-total) + 28px);
 display:none;scrollbar-width:none;
 }
 .screen::-webkit-scrollbar{display:none;}
 .screen.active{display:block;}
 .screen.auth-screen{padding:0;}
 
+/* İlk içerik safe-area altında başlasın */
+.screen:not(.auth-screen) > *:first-child{
+padding-top:calc(var(–safe-top) + 8px);
+}
+
 /* ═══════════════════════════════════════
-TAB BAR
+TAB BAR — FLOATING LIQUID GLASS ISLAND
 ═══════════════════════════════════════ */
 .tab-bar{
-position:absolute;bottom:0;left:0;right:0;
-padding-bottom:var(–safe-bottom);
-padding-left:var(–safe-left);padding-right:var(–safe-right);
-height:var(–tab-total);
-background:var(–tab-bg);
-backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
-border-top:.5px solid var(–glass-border);
-display:flex;justify-content:space-around;align-items:flex-start;
-padding-top:10px;z-index:9999;
-transition:background .4s,opacity .3s,transform .3s;
+/* ✅ Floating island: ekrana yapışık değil, havada duruyor */
+position:fixed;
+bottom:calc(20px + var(–safe-bottom));
+left:20px;right:20px;
+height:64px;
+border-radius:30px;
+/* Liquid Glass efekti */
+background:rgba(18,18,30,.72);
+backdrop-filter:blur(28px) saturate(1.6);
+-webkit-backdrop-filter:blur(28px) saturate(1.6);
+border:.5px solid rgba(255,255,255,.18);
+/* Dış parlama */
+box-shadow:
+0 8px 32px rgba(0,0,0,.35),
+0 2px 8px rgba(0,0,0,.25),
+inset 0 .5px 0 rgba(255,255,255,.15);
+display:flex;justify-content:space-around;align-items:center;
+padding:0 6px;z-index:9999;
+transition:opacity .3s,transform .35s cubic-bezier(.34,1.2,.64,1),background .4s;
 }
-.tab-bar.hidden{opacity:0;pointer-events:none;transform:translateY(20px);}
+[data-theme=“light”] .tab-bar{
+background:rgba(240,240,250,.80);
+border-color:rgba(0,0,0,.1);
+box-shadow:0 8px 32px rgba(0,0,0,.15),0 2px 8px rgba(0,0,0,.08),inset 0 .5px 0 rgba(255,255,255,.9);
+}
+.tab-bar.hidden{opacity:0;pointer-events:none;transform:translateY(24px);}
 .tab-item{
 flex:1;display:flex;flex-direction:column;
 align-items:center;justify-content:center;
-gap:3px;color:var(–text-sec);cursor:pointer;
-transition:color .2s;min-width:0;
+gap:3px;color:var(–text-sec);
+cursor:pointer;touch-action:manipulation;
+transition:color .2s,transform .15s;min-width:0;
+padding:8px 4px;border-radius:20px;
 }
-.tab-item .tab-icon{font-size:clamp(16px,4.5vw,20px);}
-.tab-item .tab-label{font-size:clamp(8px,2vw,10px);font-weight:500;}
+.tab-item:active{transform:scale(.88);}
+.tab-item .tab-icon{font-size:clamp(18px,5vw,22px);}
+.tab-item .tab-label{font-size:clamp(8px,2.2vw,10px);font-weight:600;letter-spacing:.2px;}
 .tab-item.active{color:#00c4ff;}
+.tab-item.active .tab-icon{
+filter:drop-shadow(0 0 6px rgba(0,196,255,.6));
+}
 .water-fab{
-width:clamp(46px,12vw,56px);height:clamp(46px,12vw,56px);
+width:clamp(48px,13vw,58px);height:clamp(48px,13vw,58px);
 background:linear-gradient(135deg,#1a8fff,#00c4ff);
 border-radius:50%;display:flex;align-items:center;justify-content:center;
-font-size:clamp(18px,5vw,24px);
-box-shadow:0 4px 20px rgba(0,196,255,.4),0 0 0 2px rgba(255,255,255,.15);
-cursor:pointer;transition:transform .2s cubic-bezier(.34,1.56,.64,1);
-flex-shrink:0;margin-top:-8px;
+font-size:clamp(20px,5.5vw,26px);
+box-shadow:0 4px 20px rgba(0,196,255,.5),0 0 0 2px rgba(255,255,255,.2),inset 0 1px 0 rgba(255,255,255,.3);
+cursor:pointer;touch-action:manipulation;
+transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s;
+flex-shrink:0;margin-top:-18px;
 }
-.water-fab:active{transform:scale(.88);}
+.water-fab:active{transform:scale(.85);box-shadow:0 2px 12px rgba(0,196,255,.4);}
 
 /* ═══════════════════════════════════════
 NOTIFICATION
 ═══════════════════════════════════════ */
 .notif{
-position:absolute;top:calc(var(–safe-top) + 60px);
+position:fixed;top:calc(var(–safe-top) + 12px);
 left:16px;right:16px;
 background:var(–modal-bg);backdrop-filter:blur(30px);
 border:.5px solid rgba(0,196,255,.3);border-radius:18px;
@@ -756,9 +771,20 @@ font-family:inherit;outline:none;transition:border-color .2s;
 .form-input::placeholder{color:var(–text-ter);}
 .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;}
 
-/* ═══════════════════════════════════════
-AI SKELETON
-═══════════════════════════════════════ */
+/* ✅ Fix 4: Tüm tıklanabilir elemanlarda touch-action ve cursor */
+button, [onclick], .tab-item, .water-fab, .drink-card, .drink-other-card,
+.ob-option, .ob-back-btn, .ob-next-btn, .qa-card, .recipe-btn,
+.settings-row, .toggle, .filter-chip, .amount-chip, .auth-btn-primary,
+.auth-social-btn, .market-check-btn, .market-delete-btn, .find-recipe-btn,
+.bar-rings-wrapper, .auth-switch a {
+cursor:pointer;
+touch-action:manipulation;
+-webkit-tap-highlight-color:transparent;
+}
+/* Tıklama alanı genişletme (özellikle küçük butonlar için) */
+.market-check-btn, .market-delete-btn, .ob-back-btn {
+min-width:44px; min-height:44px;
+}
 @keyframes shimmer{0%{background-position:-400px 0;}100%{background-position:400px 0;}}
 .ai-skeleton{
 background:linear-gradient(90deg,var(–glass) 25%,rgba(255,255,255,.14) 50%,var(–glass) 75%);
@@ -793,10 +819,7 @@ ANIMATIONS
 
 <!-- ── STATUS BAR ── -->
 
-<div class="status-bar">
-  <div class="status-time" id="status-clock">9:41</div>
-  <div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
-</div>
+<!-- status-bar div kaldırıldı — telefonun kendi OS durum çubuğu kullanılıyor -->
 
 <!-- ── NOTIFICATION TOAST ── -->
 
@@ -1191,8 +1214,8 @@ ANIMATIONS
   <div class="settings-section">
     <div class="settings-label">Tercihler</div>
     <div class="settings-group">
-      <div class="settings-row" onclick="openModal('lang-modal')"><div class="sr-icon" style="background:rgba(59,158,255,.15)">🌐</div><div class="sr-text"><div class="sr-title">Dil</div><div class="sr-sub" id="current-lang-label">Türkçe</div></div><div class="sr-arrow">›</div></div>
-      <div class="settings-row" onclick="openModal('theme-modal')"><div class="sr-icon" style="background:rgba(255,214,0,.15)" id="theme-icon">🌙</div><div class="sr-text"><div class="sr-title">Tema</div><div class="sr-sub" id="current-theme-label">Koyu</div></div><div class="sr-arrow">›</div></div>
+      <div class="settings-row" onclick="openModal('lang-modal')"><div class="sr-icon" style="background:rgba(59,158,255,.15)">🌐</div><div class="sr-text"><div class="sr-title" data-i18n="langLabel">Dil</div><div class="sr-sub" id="current-lang-label">Türkçe</div></div><div class="sr-arrow">›</div></div>
+      <div class="settings-row" onclick="openModal('theme-modal')"><div class="sr-icon" style="background:rgba(255,214,0,.15)" id="theme-icon">🌙</div><div class="sr-text"><div class="sr-title" data-i18n="themeLabel">Tema</div><div class="sr-sub" id="current-theme-label">Koyu</div></div><div class="sr-arrow">›</div></div>
       <div class="settings-row"><div class="sr-icon" style="background:rgba(48,209,88,.15)">🍏</div><div class="sr-text"><div class="sr-title">Apple Health</div><div class="sr-sub">Bağlı</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
       <div class="settings-row"><div class="sr-icon" style="background:rgba(255,159,10,.15)">🔔</div><div class="sr-text"><div class="sr-title">Bildirimler</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
     </div>
@@ -1262,11 +1285,13 @@ ANIMATIONS
 <div class="modal-overlay" id="lang-modal" onclick="closeModalOuter(event,'lang-modal')">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-title">Dil Seçin</div>
+    <div class="modal-title" data-i18n="langTitle">Dil Seçin</div>
     <div style="height:10px"></div>
-    <div class="option-row selected" id="lang-tr" onclick="setLanguage('tr')"><div class="option-icon">🇹🇷</div><div><div class="option-title">Türkçe</div></div><div class="option-check">✓</div></div>
-    <div class="option-row" id="lang-en" onclick="setLanguage('en')"><div class="option-icon">🇬🇧</div><div><div class="option-title">English</div></div><div class="option-check">✓</div></div>
-    <div class="option-row" id="lang-es" onclick="setLanguage('es')"><div class="option-icon">🇪🇸</div><div><div class="option-title">Español</div></div><div class="option-check">✓</div></div>
+    <div class="option-row selected" id="lang-opt-tr" onclick="setLanguage('tr')"><div class="option-icon">🇹🇷</div><div><div class="option-title">Türkçe</div></div><div class="option-check">✓</div></div>
+    <div class="option-row" id="lang-opt-en" onclick="setLanguage('en')"><div class="option-icon">🇬🇧</div><div><div class="option-title">English</div></div><div class="option-check">✓</div></div>
+    <div class="option-row" id="lang-opt-es" onclick="setLanguage('es')"><div class="option-icon">🇪🇸</div><div><div class="option-title">Español</div></div><div class="option-check">✓</div></div>
+    <div class="option-row" id="lang-opt-ar" onclick="setLanguage('ar')"><div class="option-icon">🇸🇦</div><div><div class="option-title">العربية</div></div><div class="option-check">✓</div></div>
+    <div class="option-row" id="lang-opt-ru" onclick="setLanguage('ru')"><div class="option-icon">🇷🇺</div><div><div class="option-title">Русский</div></div><div class="option-check">✓</div></div>
   </div>
 </div>
 
@@ -1275,11 +1300,11 @@ ANIMATIONS
 <div class="modal-overlay" id="theme-modal" onclick="closeModalOuter(event,'theme-modal')">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-title">Tema Seçin</div>
+    <div class="modal-title" data-i18n="themeTitle">Tema Seçin</div>
     <div style="height:10px"></div>
-    <div class="option-row selected" id="theme-dark" onclick="setTheme('dark')"><div class="option-icon themed" style="background:rgba(20,20,40,.85)">🌙</div><div><div class="option-title">Koyu</div><div class="option-sub">Karanlık, modern</div></div><div class="option-check">✓</div></div>
-    <div class="option-row" id="theme-light" onclick="setTheme('light')"><div class="option-icon themed" style="background:rgba(242,242,247,.95);border:.5px solid rgba(0,0,0,.08)">☀️</div><div><div class="option-title">Açık</div><div class="option-sub">Ferah görünüm</div></div><div class="option-check">✓</div></div>
-    <div class="option-row" id="theme-auto" onclick="setTheme('auto')"><div class="option-icon themed" style="background:linear-gradient(135deg,#1a1a2e 50%,#f2f2f7 50%)">⚙️</div><div><div class="option-title">Otomatik</div><div class="option-sub">Cihaz tercihi</div></div><div class="option-check">✓</div></div>
+    <div class="option-row selected" id="theme-opt-dark" onclick="setTheme('dark')"><div class="option-icon themed" style="background:rgba(20,20,40,.85)">🌙</div><div><div class="option-title" data-i18n="themeDark">Koyu</div><div class="option-sub" data-i18n="themeDarkSub">Karanlık, modern</div></div><div class="option-check">✓</div></div>
+    <div class="option-row" id="theme-opt-light" onclick="setTheme('light')"><div class="option-icon themed" style="background:rgba(242,242,247,.95);border:.5px solid rgba(0,0,0,.08)">☀️</div><div><div class="option-title" data-i18n="themeLight">Açık</div><div class="option-sub" data-i18n="themeLightSub">Ferah görünüm</div></div><div class="option-check">✓</div></div>
+    <div class="option-row" id="theme-opt-auto" onclick="setTheme('auto')"><div class="option-icon themed" style="background:linear-gradient(135deg,#1a1a2e 50%,#f2f2f7 50%)">⚙️</div><div><div class="option-title" data-i18n="themeAuto">Otomatik</div><div class="option-sub" data-i18n="themeAutoSub">Cihaz tercihi</div></div><div class="option-check">✓</div></div>
   </div>
 </div>
 
@@ -1440,8 +1465,15 @@ function scheduleMidnightReset() {
    BOOT
 ══════════════════════════════════════════════════ */
 function boot() {
-  applyThemeToDOM('dark');
-  updateClock(); setInterval(updateClock, 30000);
+  // Kayıtlı tema ve dil yükle
+  const savedTheme = (() => { try { return localStorage.getItem('ek_theme') || 'dark'; } catch(e) { return 'dark'; } })();
+  const savedLang  = (() => { try { return localStorage.getItem('ek_lang')  || 'tr';   } catch(e) { return 'tr';   } })();
+  currentTheme = savedTheme;
+  activeLang   = savedLang;
+  const resolved = savedTheme === 'auto' ? (window.matchMedia('(prefers-color-scheme:light)').matches ? 'light' : 'dark') : savedTheme;
+  applyThemeToDOM(resolved);
+  applyTranslations();
+  // status-clock kaldırıldı — OS saatini kullanıyoruz
   loadBarData(); buildDrinkGrid(); updateBarRings();
   renderMarketList();
   appUser = loadUser();
@@ -1984,27 +2016,321 @@ function closeModal(id) { document.getElementById(id).classList.remove('show'); 
 function closeModalOuter(e, id) { if(e.target===document.getElementById(id)) closeModal(id); }
 
 /* ══════════════════════════════════════════════════
-   TEMA
+   i18n — ÇOK DİLLİ DESTEK
+══════════════════════════════════════════════════ */
+const TRANSLATIONS = {
+  tr: {
+    // Auth
+    appName:'Enes Kitchen Pro', appTagline:'Sağlıklı yaşamın lezzetli tarafı',
+    loginTitle:'Giriş Yap', registerTitle:'Hesap Oluştur',
+    emailLabel:'E-POSTA', passLabel:'ŞİFRE',
+    loginBtn:'Giriş Yap', registerBtn:'Kayıt Ol ve Devam Et →',
+    noAccount:'Hesabın yok mu?', signUp:'Kayıt Ol',
+    hasAccount:'Hesabın var mı?', signIn:'Giriş Yap',
+    // Tabs
+    tabHome:'Ana Sayfa', tabFridge:'Dolap', tabBar:'Bar', tabProfile:'Profil',
+    // Home
+    greeting_morning:'Günaydın ☀️', greeting_afternoon:'İyi Günler ✨',
+    greeting_evening:'İyi Akşamlar 🌙', greeting_night:'İyi Geceler 🌌',
+    dailyRecipe:'Günün Tarifi', refresh:'Yenile ✨',
+    viewRecipe:'Tarifi Görüntüle →', fridgeCard:'Buzdolabında Ne Var?',
+    fridgeSub:'Malzeme seç, tarif bul', marketCard:'Market Listesi',
+    barCard:'İçecek Takibi', barCardEmpty:'Bugün henüz içecek eklenmedi',
+    // Bar
+    barTitle:'İçecek Takibi', barRingsLabel:'Günlük Özet · Rapora Tıkla',
+    barGridLabel:'İçecek Ekle — Uzun Bas: Miktar Seç',
+    barTotal:'Toplam', otherDrink:'Diğer / Özel Giriş',
+    otherDrinkSub:'İçecek adı, ml, kalori ve şeker gir',
+    legendWater:'Su', legendKcal:'Kcal', legendSugar:'Şeker',
+    // Report modal
+    reportTitle:'📊 Günlük İçecek Raporu', reportEmpty:'Henüz içecek eklenmedi.',
+    resetDay:'Günü Sıfırla', close:'Kapat',
+    // Amount picker
+    addBtn:'Ekle ✓', howMuch:'Ne kadar içtin?',
+    // Custom modal
+    customTitle:'Özel İçecek Ekle', customSub:'Besin değerlerini kendin gir',
+    customNameLabel:'İçecek Adı', customNamePh:'Örn: Taze Limonata',
+    mlLabel:'Miktar (ml)', kcalLabel:'Kalori', sugarLabel:'Şeker (g)',
+    // Fridge
+    fridgeTitle:'🥦 Buzdolabı', fridgeSub2:'Malzemeleri seç, AI tarif önersin',
+    veggies:'Sebzeler', proteins:'Proteinler',
+    findRecipeBtn:'✦ AI ile Tarif Bul',
+    // Market
+    marketTitle:'🛒 Market', marketSub:'Alacaklarını ekle, aldıkça işaretle',
+    marketAdd:'Ekle', marketPh:'Ürün ekle...', marketEmpty:'Liste boş.',
+    marketEmptySub:'Yukarıya ürün adı yaz ve ekle!', clearDone:'🗑 Alınanları Sil',
+    // Profile
+    saveChanges:'Değişiklikleri Kaydet', saved:'✓ Kaydedildi!',
+    waterGoalLabel:'Günlük Su Hedefin',
+    aiTitle:'🤖 AI Entegrasyonu', apiKeyLabel:'Gemini API Anahtarı',
+    apiKeySub:'Tarayıcınızda şifrelenmiş saklıdır',
+    apiSave:'Kaydet 🔐', apiTest:'Test Et ⚡',
+    prefTitle:'Tercihler', langLabel:'Dil', themeLabel:'Tema',
+    accountTitle:'Hesap', logout:'Çıkış Yap',
+    // Settings labels
+    heightLabel:'Boy (cm)', weightLabel:'Kilo (kg)', ageLabel:'Yaş',
+    // Theme modal
+    themeTitle:'Tema Seçin', themeDark:'Koyu', themeLight:'Açık', themeAuto:'Otomatik',
+    themeDarkSub:'Karanlık, modern', themeLightSub:'Ferah görünüm', themeAutoSub:'Cihaz tercihi',
+    // Lang modal
+    langTitle:'Dil Seçin',
+    // Detail
+    backToFridge:'← Malzemelere Dön', chefTip:'👨‍🍳 Şefin Tüyosu',
+    howToCook:'Nasıl Yapılır?', retryAI:'🔄 Tekrar Dene',
+  },
+  en: {
+    appName:'Enes Kitchen Pro', appTagline:'The delicious side of healthy living',
+    loginTitle:'Sign In', registerTitle:'Create Account',
+    emailLabel:'EMAIL', passLabel:'PASSWORD',
+    loginBtn:'Sign In', registerBtn:'Create Account & Continue →',
+    noAccount:"Don't have an account?", signUp:'Sign Up',
+    hasAccount:'Already have an account?', signIn:'Sign In',
+    tabHome:'Home', tabFridge:'Fridge', tabBar:'Bar', tabProfile:'Profile',
+    greeting_morning:'Good Morning ☀️', greeting_afternoon:'Good Afternoon ✨',
+    greeting_evening:'Good Evening 🌙', greeting_night:'Good Night 🌌',
+    dailyRecipe:"Today's Recipe", refresh:'Refresh ✨',
+    viewRecipe:'View Recipe →', fridgeCard:"What's in the Fridge?",
+    fridgeSub:'Select ingredients, find recipe', marketCard:'Shopping List',
+    barCard:'Drink Tracker', barCardEmpty:'No drinks added today',
+    barTitle:'Drink Tracker', barRingsLabel:'Daily Summary · Tap for Report',
+    barGridLabel:'Add Drink — Long Press: Choose Amount',
+    barTotal:'Total', otherDrink:'Other / Custom Entry',
+    otherDrinkSub:'Enter drink name, ml, calories and sugar',
+    legendWater:'Water', legendKcal:'Kcal', legendSugar:'Sugar',
+    reportTitle:'📊 Daily Drink Report', reportEmpty:'No drinks added yet.',
+    resetDay:'Reset Day', close:'Close',
+    addBtn:'Add ✓', howMuch:'How much did you drink?',
+    customTitle:'Add Custom Drink', customSub:'Enter nutrition values manually',
+    customNameLabel:'Drink Name', customNamePh:'E.g. Fresh Lemonade',
+    mlLabel:'Amount (ml)', kcalLabel:'Calories', sugarLabel:'Sugar (g)',
+    fridgeTitle:'🥦 Fridge', fridgeSub2:'Select ingredients, let AI suggest a recipe',
+    veggies:'Vegetables', proteins:'Proteins',
+    findRecipeBtn:'✦ Find Recipe with AI',
+    marketTitle:'🛒 Market', marketSub:'Add items, check them off as you shop',
+    marketAdd:'Add', marketPh:'Add item...', marketEmpty:'List is empty.',
+    marketEmptySub:'Type an item name above and add!', clearDone:'🗑 Clear Done',
+    saveChanges:'Save Changes', saved:'✓ Saved!',
+    waterGoalLabel:'Daily Water Goal',
+    aiTitle:'🤖 AI Integration', apiKeyLabel:'Gemini API Key',
+    apiKeySub:'Stored encrypted in your browser',
+    apiSave:'Save 🔐', apiTest:'Test ⚡',
+    prefTitle:'Preferences', langLabel:'Language', themeLabel:'Theme',
+    accountTitle:'Account', logout:'Sign Out',
+    heightLabel:'Height (cm)', weightLabel:'Weight (kg)', ageLabel:'Age',
+    themeTitle:'Choose Theme', themeDark:'Dark', themeLight:'Light', themeAuto:'Auto',
+    themeDarkSub:'Dark, modern', themeLightSub:'Bright look', themeAutoSub:'Device preference',
+    langTitle:'Choose Language',
+    backToFridge:'← Back to Ingredients', chefTip:"👨‍🍳 Chef's Tip",
+    howToCook:'How to Cook?', retryAI:'🔄 Try Again',
+  },
+  es: {
+    appName:'Enes Kitchen Pro', appTagline:'El lado delicioso de la vida sana',
+    loginTitle:'Iniciar Sesión', registerTitle:'Crear Cuenta',
+    emailLabel:'CORREO', passLabel:'CONTRASEÑA',
+    loginBtn:'Iniciar Sesión', registerBtn:'Registrarse y Continuar →',
+    noAccount:'¿No tienes cuenta?', signUp:'Regístrate',
+    hasAccount:'¿Ya tienes cuenta?', signIn:'Iniciar Sesión',
+    tabHome:'Inicio', tabFridge:'Nevera', tabBar:'Bar', tabProfile:'Perfil',
+    greeting_morning:'Buenos Días ☀️', greeting_afternoon:'Buenas Tardes ✨',
+    greeting_evening:'Buenas Tardes 🌙', greeting_night:'Buenas Noches 🌌',
+    dailyRecipe:'Receta del Día', refresh:'Actualizar ✨',
+    viewRecipe:'Ver Receta →', fridgeCard:'¿Qué hay en la Nevera?',
+    fridgeSub:'Elige ingredientes, encuentra receta', marketCard:'Lista de Compras',
+    barCard:'Registro de Bebidas', barCardEmpty:'Sin bebidas añadidas hoy',
+    barTitle:'Registro de Bebidas', barRingsLabel:'Resumen Diario · Toca para Informe',
+    barGridLabel:'Añadir Bebida — Mantén: Elegir Cantidad',
+    barTotal:'Total', otherDrink:'Otro / Entrada Personalizada',
+    otherDrinkSub:'Ingresa nombre, ml, calorías y azúcar',
+    legendWater:'Agua', legendKcal:'Kcal', legendSugar:'Azúcar',
+    reportTitle:'📊 Informe Diario de Bebidas', reportEmpty:'Aún no hay bebidas.',
+    resetDay:'Resetear Día', close:'Cerrar',
+    addBtn:'Añadir ✓', howMuch:'¿Cuánto bebiste?',
+    customTitle:'Añadir Bebida Personalizada', customSub:'Ingresa los valores nutricionales',
+    customNameLabel:'Nombre de Bebida', customNamePh:'Ej: Limonada Fresca',
+    mlLabel:'Cantidad (ml)', kcalLabel:'Calorías', sugarLabel:'Azúcar (g)',
+    fridgeTitle:'🥦 Nevera', fridgeSub2:'Elige ingredientes, que la IA sugiera una receta',
+    veggies:'Verduras', proteins:'Proteínas',
+    findRecipeBtn:'✦ Buscar Receta con IA',
+    marketTitle:'🛒 Mercado', marketSub:'Añade artículos, márcalos al comprar',
+    marketAdd:'Añadir', marketPh:'Añadir artículo...', marketEmpty:'La lista está vacía.',
+    marketEmptySub:'¡Escribe un artículo arriba y añádelo!', clearDone:'🗑 Limpiar Hechos',
+    saveChanges:'Guardar Cambios', saved:'✓ Guardado!',
+    waterGoalLabel:'Meta Diaria de Agua',
+    aiTitle:'🤖 Integración IA', apiKeyLabel:'Clave API Gemini',
+    apiKeySub:'Almacenado cifrado en tu navegador',
+    apiSave:'Guardar 🔐', apiTest:'Probar ⚡',
+    prefTitle:'Preferencias', langLabel:'Idioma', themeLabel:'Tema',
+    accountTitle:'Cuenta', logout:'Cerrar Sesión',
+    heightLabel:'Altura (cm)', weightLabel:'Peso (kg)', ageLabel:'Edad',
+    themeTitle:'Elegir Tema', themeDark:'Oscuro', themeLight:'Claro', themeAuto:'Auto',
+    themeDarkSub:'Oscuro, moderno', themeLightSub:'Apariencia brillante', themeAutoSub:'Preferencia del dispositivo',
+    langTitle:'Elegir Idioma',
+    backToFridge:'← Volver a Ingredientes', chefTip:'👨‍🍳 Consejo del Chef',
+    howToCook:'¿Cómo Cocinar?', retryAI:'🔄 Intentar de Nuevo',
+  },
+  ar: {
+    appName:'Enes Kitchen Pro', appTagline:'الجانب اللذيذ من الحياة الصحية',
+    loginTitle:'تسجيل الدخول', registerTitle:'إنشاء حساب',
+    emailLabel:'البريد الإلكتروني', passLabel:'كلمة المرور',
+    loginBtn:'تسجيل الدخول', registerBtn:'إنشاء حساب والمتابعة →',
+    noAccount:'ليس لديك حساب؟', signUp:'سجل الآن',
+    hasAccount:'لديك حساب؟', signIn:'تسجيل الدخول',
+    tabHome:'الرئيسية', tabFridge:'الثلاجة', tabBar:'المشروبات', tabProfile:'الملف',
+    greeting_morning:'صباح الخير ☀️', greeting_afternoon:'مساء الخير ✨',
+    greeting_evening:'مساء النور 🌙', greeting_night:'تصبح على خير 🌌',
+    dailyRecipe:'وصفة اليوم', refresh:'تحديث ✨',
+    viewRecipe:'عرض الوصفة →', fridgeCard:'ماذا في الثلاجة؟',
+    fridgeSub:'اختر المكونات، ابحث عن وصفة', marketCard:'قائمة التسوق',
+    barCard:'تتبع المشروبات', barCardEmpty:'لم تضف مشروبات اليوم',
+    barTitle:'تتبع المشروبات', barRingsLabel:'ملخص يومي · اضغط للتقرير',
+    barGridLabel:'أضف مشروب — اضغط طويل: اختر الكمية',
+    barTotal:'المجموع', otherDrink:'أخرى / إدخال مخصص',
+    otherDrinkSub:'أدخل الاسم، ml، السعرات والسكر',
+    legendWater:'ماء', legendKcal:'سعرة', legendSugar:'سكر',
+    reportTitle:'📊 تقرير المشروبات اليومي', reportEmpty:'لم تضف مشروبات بعد.',
+    resetDay:'إعادة تعيين اليوم', close:'إغلاق',
+    addBtn:'إضافة ✓', howMuch:'كم شربت؟',
+    customTitle:'إضافة مشروب مخصص', customSub:'أدخل القيم الغذائية يدوياً',
+    customNameLabel:'اسم المشروب', customNamePh:'مثال: عصير ليمون',
+    mlLabel:'الكمية (ml)', kcalLabel:'السعرات', sugarLabel:'السكر (g)',
+    fridgeTitle:'🥦 الثلاجة', fridgeSub2:'اختر المكونات، دع الذكاء الاصطناعي يقترح وصفة',
+    veggies:'خضروات', proteins:'بروتينات',
+    findRecipeBtn:'✦ ابحث عن وصفة بالذكاء الاصطناعي',
+    marketTitle:'🛒 السوق', marketSub:'أضف عناصر، وضعها علامة عند الشراء',
+    marketAdd:'إضافة', marketPh:'أضف عنصراً...', marketEmpty:'القائمة فارغة.',
+    marketEmptySub:'اكتب اسم منتج أعلاه وأضفه!', clearDone:'🗑 مسح المكتملة',
+    saveChanges:'حفظ التغييرات', saved:'✓ تم الحفظ!',
+    waterGoalLabel:'هدف الماء اليومي',
+    aiTitle:'🤖 تكامل الذكاء الاصطناعي', apiKeyLabel:'مفتاح Gemini API',
+    apiKeySub:'مخزن مشفر في متصفحك',
+    apiSave:'حفظ 🔐', apiTest:'اختبار ⚡',
+    prefTitle:'التفضيلات', langLabel:'اللغة', themeLabel:'المظهر',
+    accountTitle:'الحساب', logout:'تسجيل الخروج',
+    heightLabel:'الطول (سم)', weightLabel:'الوزن (كغ)', ageLabel:'العمر',
+    themeTitle:'اختر المظهر', themeDark:'داكن', themeLight:'فاتح', themeAuto:'تلقائي',
+    themeDarkSub:'داكن، عصري', themeLightSub:'مظهر مشرق', themeAutoSub:'تفضيل الجهاز',
+    langTitle:'اختر اللغة',
+    backToFridge:'← العودة للمكونات', chefTip:'👨‍🍳 نصيحة الشيف',
+    howToCook:'كيفية الطهي؟', retryAI:'🔄 حاول مجددًا',
+  },
+  ru: {
+    appName:'Enes Kitchen Pro', appTagline:'Вкусная сторона здоровой жизни',
+    loginTitle:'Войти', registerTitle:'Создать аккаунт',
+    emailLabel:'ЭМЕЙЛ', passLabel:'ПАРОЛЬ',
+    loginBtn:'Войти', registerBtn:'Создать и Продолжить →',
+    noAccount:'Нет аккаунта?', signUp:'Зарегистрироваться',
+    hasAccount:'Уже есть аккаунт?', signIn:'Войти',
+    tabHome:'Главная', tabFridge:'Холодильник', tabBar:'Бар', tabProfile:'Профиль',
+    greeting_morning:'Доброе утро ☀️', greeting_afternoon:'Добрый день ✨',
+    greeting_evening:'Добрый вечер 🌙', greeting_night:'Спокойной ночи 🌌',
+    dailyRecipe:'Рецепт дня', refresh:'Обновить ✨',
+    viewRecipe:'Посмотреть рецепт →', fridgeCard:'Что в холодильнике?',
+    fridgeSub:'Выбери ингредиенты, найди рецепт', marketCard:'Список покупок',
+    barCard:'Трекер напитков', barCardEmpty:'Сегодня напитки не добавлены',
+    barTitle:'Трекер напитков', barRingsLabel:'Сводка дня · Нажми для отчёта',
+    barGridLabel:'Добавить напиток — Долгое нажатие: выбрать количество',
+    barTotal:'Всего', otherDrink:'Другое / Свой вариант',
+    otherDrinkSub:'Введи название, мл, калории и сахар',
+    legendWater:'Вода', legendKcal:'Ккал', legendSugar:'Сахар',
+    reportTitle:'📊 Ежедневный отчёт по напиткам', reportEmpty:'Напитки ещё не добавлены.',
+    resetDay:'Сбросить день', close:'Закрыть',
+    addBtn:'Добавить ✓', howMuch:'Сколько ты выпил?',
+    customTitle:'Добавить напиток', customSub:'Введи питательные значения вручную',
+    customNameLabel:'Название напитка', customNamePh:'Напр: Свежий лимонад',
+    mlLabel:'Количество (мл)', kcalLabel:'Калории', sugarLabel:'Сахар (г)',
+    fridgeTitle:'🥦 Холодильник', fridgeSub2:'Выбери ингредиенты, ИИ предложит рецепт',
+    veggies:'Овощи', proteins:'Белки',
+    findRecipeBtn:'✦ Найти рецепт с ИИ',
+    marketTitle:'🛒 Магазин', marketSub:'Добавляй, отмечай купленное',
+    marketAdd:'Добавить', marketPh:'Добавить товар...', marketEmpty:'Список пуст.',
+    marketEmptySub:'Напиши название товара выше и добавь!', clearDone:'🗑 Убрать купленное',
+    saveChanges:'Сохранить изменения', saved:'✓ Сохранено!',
+    waterGoalLabel:'Дневная норма воды',
+    aiTitle:'🤖 ИИ интеграция', apiKeyLabel:'Ключ Gemini API',
+    apiKeySub:'Хранится зашифровано в браузере',
+    apiSave:'Сохранить 🔐', apiTest:'Тестировать ⚡',
+    prefTitle:'Настройки', langLabel:'Язык', themeLabel:'Тема',
+    accountTitle:'Аккаунт', logout:'Выйти',
+    heightLabel:'Рост (см)', weightLabel:'Вес (кг)', ageLabel:'Возраст',
+    themeTitle:'Выбрать тему', themeDark:'Тёмная', themeLight:'Светлая', themeAuto:'Авто',
+    themeDarkSub:'Тёмная, современная', themeLightSub:'Светлый вид', themeAutoSub:'Настройки устройства',
+    langTitle:'Выбрать язык',
+    backToFridge:'← К ингредиентам', chefTip:'👨‍🍳 Совет шефа',
+    howToCook:'Как готовить?', retryAI:'🔄 Попробовать снова',
+  }
+};
+
+let activeLang = 'tr';
+
+function t(key) {
+  return TRANSLATIONS[activeLang]?.[key] ?? TRANSLATIONS['tr']?.[key] ?? key;
+}
+
+/* Tüm i18n data-i18n attribute'larını güncelle */
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const attr = el.getAttribute('data-i18n-attr');
+    const val = t(key);
+    if (attr) el.setAttribute(attr, val);
+    else el.textContent = val;
+  });
+  // Tab bar labels
+  const tabs = {home:'tabHome', fridge:'tabFridge', bar:'tabBar', profile:'tabProfile'};
+  Object.entries(tabs).forEach(([id,key]) => {
+    const el = document.querySelector(`#tab-${id} .tab-label`);
+    if (el) el.textContent = t(key);
+  });
+  // Greeting güncelle
+  updateGreeting();
+  // RTL desteği (Arapça)
+  document.getElementById('app').setAttribute('dir', activeLang === 'ar' ? 'rtl' : 'ltr');
+  document.getElementById('app').style.fontFamily = activeLang === 'ar'
+    ? "'SF Arabic', 'Helvetica Neue', sans-serif"
+    : "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif";
+}
+
+/* ══════════════════════════════════════════════════
+   TEMA — Fix 4: tüm root değişkenler düzgün tetiklenir
 ══════════════════════════════════════════════════ */
 function setTheme(th) {
   currentTheme = th;
-  document.querySelectorAll('[id^="theme-"]').forEach(e=>e.classList.remove('selected'));
-  document.getElementById('theme-'+th).classList.add('selected');
-  let r=th; if(th==='auto') r=window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark';
-  applyThemeToDOM(r);
-  const labels={dark:'Koyu',light:'Açık',auto:'Otomatik'}, icons={dark:'🌙',light:'☀️',auto:'⚙️'};
-  document.getElementById('current-theme-label').textContent=labels[th];
-  document.getElementById('theme-icon').textContent=icons[th];
+  // Seçim işaretleri
+  document.querySelectorAll('[id^="theme-opt-"]').forEach(e => e.classList.remove('selected'));
+  const optEl = document.getElementById('theme-opt-' + th);
+  if (optEl) optEl.classList.add('selected');
+  // Gerçek tema uygula
+  let resolved = th;
+  if (th === 'auto') resolved = window.matchMedia('(prefers-color-scheme:light)').matches ? 'light' : 'dark';
+  applyThemeToDOM(resolved);
+  // UI güncelle
+  const labels = { dark: t('themeDark'), light: t('themeLight'), auto: t('themeAuto') };
+  const icons  = { dark:'🌙', light:'☀️', auto:'⚙️' };
+  const labelEl = document.getElementById('current-theme-label');
+  const iconEl  = document.getElementById('theme-icon');
+  if (labelEl) labelEl.textContent = labels[th];
+  if (iconEl)  iconEl.textContent  = icons[th];
   closeModal('theme-modal');
+  // localStorage'a kaydet
+  try { localStorage.setItem('ek_theme', th); } catch(e) {}
 }
-function setLanguage(l){
-  const labels={tr:'Türkçe',en:'English',es:'Español'};
-  document.querySelectorAll('[id^="lang-"]').forEach(e=>e.classList.remove('selected'));
-  document.getElementById('lang-'+l).classList.add('selected');
-  document.getElementById('current-lang-label').textContent=labels[l];
+
+function setLanguage(l) {
+  activeLang = l;
+  const labels = { tr:'Türkçe', en:'English', es:'Español', ar:'العربية', ru:'Русский' };
+  document.querySelectorAll('[id^="lang-opt-"]').forEach(e => e.classList.remove('selected'));
+  const optEl = document.getElementById('lang-opt-' + l);
+  if (optEl) optEl.classList.add('selected');
+  const labelEl = document.getElementById('current-lang-label');
+  if (labelEl) labelEl.textContent = labels[l];
+  applyTranslations();
   closeModal('lang-modal');
+  try { localStorage.setItem('ek_lang', l); } catch(e) {}
 }
-window.matchMedia('(prefers-color-scheme:light)').addEventListener('change',()=>{if(currentTheme==='auto')setTheme('auto');});
+
+window.matchMedia('(prefers-color-scheme:light)').addEventListener('change', () => {
+  if (currentTheme === 'auto') setTheme('auto');
+});
 
 /* ══════════════════════════════════════════════════
    AI GEMINI + DEMO RECIPES
@@ -2093,10 +2419,14 @@ function toast(icon,title,sub){
 function updateClock(){const now=new Date();document.getElementById('status-clock').textContent=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');}
 function updateGreeting(){
   const h=new Date().getHours();
-  let msg='İyi Geceler 🌌';
-  if(h>=5&&h<12)msg='Günaydın ☀️';else if(h>=12&&h<18)msg='İyi Günler ✨';else if(h>=18&&h<22)msg='İyi Akşamlar 🌙';
-  document.getElementById('greeting-text').textContent=msg;
-  document.getElementById('user-display-name').textContent=(appUser?.name)||'Şef';
+  let key='greeting_night';
+  if(h>=5&&h<12) key='greeting_morning';
+  else if(h>=12&&h<18) key='greeting_afternoon';
+  else if(h>=18&&h<22) key='greeting_evening';
+  const el=document.getElementById('greeting-text');
+  if(el) el.textContent=t(key);
+  const nameEl=document.getElementById('user-display-name');
+  if(nameEl) nameEl.textContent=(appUser?.name)||'Şef';
 }
 
 /* ══════════════════════════════════════════════════
