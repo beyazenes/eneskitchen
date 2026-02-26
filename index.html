@@ -59,24 +59,36 @@ margin:0;padding:0;box-sizing:border-box;
 -webkit-tap-highlight-color:transparent;
 }
 input,textarea{-webkit-user-select:text;user-select:text;}
-html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none;-webkit-overflow-scrolling:touch;}
+html{
+width:100%; height:100%;
+overflow:hidden;
+overscroll-behavior:none;
+}
 body{
-/* ✅ Fix 6: body tam ekran arka plan — status bar şeridi görünmez */
+width:100%; height:100%;
+overflow:hidden;
+overscroll-behavior:none;
+-webkit-overflow-scrolling:touch;
 background:var(–body-bg);
 font-family:-apple-system,“SF Pro Display”,“Helvetica Neue”,sans-serif;
-color:var(–text);display:block;transition:background .4s;
-/* Arka plan gradyanı status bar bölgesini de kaplar */
+color:var(–text);
+transition:background .4s;
+/* Gradient tam arka plan — status bar dahil tüm ekranı kaplar */
 background-image:
 radial-gradient(ellipse 80% 50% at 20% 10%,rgba(59,158,255,.1) 0%,transparent 60%),
 radial-gradient(ellipse 60% 60% at 80% 80%,rgba(48,209,88,.07) 0%,transparent 60%),
 radial-gradient(ellipse 50% 70% at 60% 30%,rgba(255,55,95,.05) 0%,transparent 60%);
-/* Viewport’u ekranın en üstünden başlat */
-position:fixed; inset:0; width:100%; height:100%;
 }
 #app{
-width:100%;height:100%;
-background:var(–bg);overflow:hidden;
-position:relative;display:flex;flex-direction:column;
+/* ✅ Fix 1: #app viewport’un tamamı, position:relative YOK
+— bu sayede position:fixed tab-bar viewport’a göre konumlanır */
+width:100vw;
+height:100vh;
+height:100dvh;
+background:var(–bg);
+overflow:hidden;
+display:flex;
+flex-direction:column;
 transition:background .4s;
 }
 
@@ -125,14 +137,20 @@ box-shadow:
 inset 0 .5px 0 rgba(255,255,255,.15);
 display:flex;justify-content:space-around;align-items:center;
 padding:0 6px;z-index:9999;
-transition:opacity .3s,transform .35s cubic-bezier(.34,1.2,.64,1),background .4s;
+transition:opacity .25s,background .4s;
 }
 [data-theme=“light”] .tab-bar{
 background:rgba(240,240,250,.80);
 border-color:rgba(0,0,0,.1);
 box-shadow:0 8px 32px rgba(0,0,0,.15),0 2px 8px rgba(0,0,0,.08),inset 0 .5px 0 rgba(255,255,255,.9);
 }
-.tab-bar.hidden{opacity:0;pointer-events:none;transform:translateY(24px);}
+.tab-bar.hidden{
+opacity:0;
+pointer-events:none;
+/* transform KULLANMA — position:fixed’ı viewport’tan koparır */
+visibility:hidden;
+transition:opacity .25s, visibility .25s;
+}
 .tab-item{
 flex:1;display:flex;flex-direction:column;
 align-items:center;justify-content:center;
@@ -1266,19 +1284,19 @@ ANIMATIONS
 
 </div><!-- /screens -->
 
-<!-- ════ TAB BAR ════ -->
+</div><!-- /app -->
 
-<!-- Yeni sıra: Home | Fridge | Su-FAB | Bar | Profile -->
+<!-- ════ TAB BAR — #app DIŞINDA, body'nin doğrudan çocuğu ════ -->
+
+<!-- ✅ Böylece position:fixed gerçek viewport'a göre çalışır -->
 
 <div class="tab-bar hidden" id="tab-bar">
-  <div class="tab-item active" id="tab-home" onclick="switchTab('home')"><div class="tab-icon">🏠</div><div class="tab-label">Ana Sayfa</div></div>
-  <div class="tab-item" id="tab-fridge" onclick="switchTab('fridge')"><div class="tab-icon">🥦</div><div class="tab-label">Dolap</div></div>
+  <div class="tab-item active" id="tab-home" onclick="switchTab('home')"><div class="tab-icon">🏠</div><div class="tab-label" data-i18n="tabHome">Ana Sayfa</div></div>
+  <div class="tab-item" id="tab-fridge" onclick="switchTab('fridge')"><div class="tab-icon">🥦</div><div class="tab-label" data-i18n="tabFridge">Dolap</div></div>
   <div class="water-fab" id="waterBtn" onclick="addWater()">💧</div>
-  <div class="tab-item" id="tab-bar" onclick="switchTab('bar')"><div class="tab-icon">🥤</div><div class="tab-label">Bar</div></div>
-  <div class="tab-item" id="tab-profile" onclick="switchTab('profile')"><div class="tab-icon">👤</div><div class="tab-label">Profil</div></div>
+  <div class="tab-item" id="tab-bar-btn" onclick="switchTab('bar')"><div class="tab-icon">🥤</div><div class="tab-label" data-i18n="tabBar">Bar</div></div>
+  <div class="tab-item" id="tab-profile" onclick="switchTab('profile')"><div class="tab-icon">👤</div><div class="tab-label" data-i18n="tabProfile">Profil</div></div>
 </div>
-
-</div><!-- /app -->
 
 <!-- ════ MODAL: LANG ════ -->
 
@@ -1462,6 +1480,17 @@ function scheduleMidnightReset() {
 }
 
 /* ══════════════════════════════════════════════════
+   GLOBAL HATA YAKALAYICI — "Script Error" debug
+══════════════════════════════════════════════════ */
+window.onerror = function(msg, src, line, col, err) {
+  console.error('🚨 JS Hatası:', msg, '| Kaynak:', src, '| Satır:', line, '| Detay:', err?.stack || err);
+  return false;
+};
+window.addEventListener('unhandledrejection', e => {
+  console.error('🚨 Promise Hatası:', e.reason);
+});
+
+/* ══════════════════════════════════════════════════
    BOOT
 ══════════════════════════════════════════════════ */
 function boot() {
@@ -1485,8 +1514,11 @@ function boot() {
 }
 
 function applyThemeToDOM(r) {
-  document.getElementById('app').setAttribute('data-theme', r);
-  document.body.setAttribute('data-theme', r);
+  // ✅ Fix 3: data-theme html, body ve #app üçüne birden uygulanıyor
+  // CSS değişkenleri [data-theme="dark/light"] selector'larıyla eşleşiyor
+  [document.documentElement, document.body, document.getElementById('app')].forEach(el => {
+    if (el) el.setAttribute('data-theme', r);
+  });
 }
 
 /* ══════════════════════════════════════════════════
@@ -1653,12 +1685,14 @@ function enterApp() {
 function switchTab(name) {
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
-  const s=document.getElementById('screen-'+name), tb=document.getElementById('tab-'+name);
-  if(s) s.classList.add('active'); if(tb) tb.classList.add('active');
+  const s  = document.getElementById('screen-'+name);
+  // 'tab-bar' id'si artık container div'e ait; bar sekmesi tab-bar-btn id'sini kullanıyor
+  const tb = document.getElementById(name==='bar' ? 'tab-bar-btn' : 'tab-'+name);
+  if(s)  s.classList.add('active');
+  if(tb) tb.classList.add('active');
   document.getElementById('tab-bar').classList.remove('hidden');
   if(name==='profile') loadApiKeyToInput();
-  if(name==='bar') updateBarRings();
-  // History push: detail ekranından geri home'a dönsün
+  if(name==='bar')     updateBarRings();
   pushNav(name);
 }
 
@@ -1671,7 +1705,8 @@ window.addEventListener('popstate', (e) => {
   const safe = ['home','fridge','bar','market','profile'].includes(target) ? target : 'home';
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
-  const s=document.getElementById('screen-'+safe), tb=document.getElementById('tab-'+safe);
+  const s=document.getElementById('screen-'+safe);
+  const tb=document.getElementById(safe==='bar' ? 'tab-bar-btn' : 'tab-'+safe);
   if(s) s.classList.add('active');
   if(tb) tb.classList.add('active');
   document.getElementById('tab-bar').classList.remove('hidden');
@@ -2268,26 +2303,88 @@ function t(key) {
 
 /* Tüm i18n data-i18n attribute'larını güncelle */
 function applyTranslations() {
+  // 1. data-i18n attribute'lu tüm elementler
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    const attr = el.getAttribute('data-i18n-attr');
+    const attr= el.getAttribute('data-i18n-attr');
     const val = t(key);
     if (attr) el.setAttribute(attr, val);
     else el.textContent = val;
   });
-  // Tab bar labels
-  const tabs = {home:'tabHome', fridge:'tabFridge', bar:'tabBar', profile:'tabProfile'};
-  Object.entries(tabs).forEach(([id,key]) => {
+
+  // 2. Tab bar etiketleri
+  ['home','fridge','profile'].forEach(id => {
     const el = document.querySelector(`#tab-${id} .tab-label`);
-    if (el) el.textContent = t(key);
+    if (el) el.textContent = t('tab'+id.charAt(0).toUpperCase()+id.slice(1));
   });
-  // Greeting güncelle
-  updateGreeting();
-  // RTL desteği (Arapça)
-  document.getElementById('app').setAttribute('dir', activeLang === 'ar' ? 'rtl' : 'ltr');
-  document.getElementById('app').style.fontFamily = activeLang === 'ar'
-    ? "'SF Arabic', 'Helvetica Neue', sans-serif"
+  const barTabLabel = document.querySelector('#tab-bar-btn .tab-label');
+  if (barTabLabel) barTabLabel.textContent = t('tabBar');
+
+  // 3. Ana Sayfa statik metinler
+  const dailySectionTitle = document.querySelector('#screen-home .section-title');
+  if (dailySectionTitle) dailySectionTitle.textContent = t('dailyRecipe');
+  const refreshBtn = document.querySelector('#screen-home .section-more');
+  if (refreshBtn) refreshBtn.textContent = t('refresh');
+  const viewBtn = document.querySelector('#screen-home .recipe-btn');
+  if (viewBtn) viewBtn.textContent = t('viewRecipe');
+  // QA kartları
+  document.querySelectorAll('#screen-home .qa-card').forEach(card => {
+    const onclick = card.getAttribute('onclick') || '';
+    const title = card.querySelector('.qa-title');
+    const sub   = card.querySelector('.qa-sub');
+    if (onclick.includes("'fridge'"))  { if(title) title.textContent=t('fridgeCard'); if(sub) sub.textContent=t('fridgeSub'); }
+    else if (onclick.includes("'market'")) { if(title) title.textContent=t('marketCard'); }
+    else if (onclick.includes("'bar'"))    { if(title) title.textContent=t('barCard'); }
+  });
+  const barHomeSub = document.getElementById('bar-home-sub');
+  if (barHomeSub && barHomeSub.textContent === 'Bugün henüz içecek eklenmedi') barHomeSub.textContent = t('barCardEmpty');
+
+  // 4. Bar sekmesi
+  const barRingsLabel = document.querySelector('.bar-rings-label');
+  if (barRingsLabel) barRingsLabel.textContent = t('barRingsLabel');
+  const barCenterLabel = document.getElementById('bar-center-label');
+  if (barCenterLabel) barCenterLabel.textContent = t('barTotal');
+
+  // 5. Fridge
+  const fridgeTitle = document.querySelector('#screen-fridge .screen-title');
+  if (fridgeTitle) fridgeTitle.textContent = t('fridgeTitle');
+  const fridgeSub = document.querySelector('#screen-fridge .screen-sub');
+  if (fridgeSub) fridgeSub.textContent = t('fridgeSub2');
+
+  // 6. Market
+  const marketTitle = document.querySelector('#screen-market .screen-title');
+  if (marketTitle) marketTitle.textContent = t('marketTitle');
+  const marketSub = document.querySelector('#screen-market .screen-sub');
+  if (marketSub) marketSub.textContent = t('marketSub');
+  const marketAddBtn = document.querySelector('#screen-market > div:nth-child(2) button');
+  if (marketAddBtn) marketAddBtn.textContent = t('marketAdd');
+  const marketInput = document.getElementById('market-input');
+  if (marketInput) marketInput.placeholder = t('marketPh');
+
+  // 7. RTL (Arapça)
+  const isRTL = activeLang === 'ar';
+  ['app','body'].forEach(id => {
+    const el = id === 'body' ? document.body : document.getElementById(id);
+    if (el) el.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+  });
+  document.getElementById('app').style.fontFamily = isRTL
+    ? "'SF Arabic','Helvetica Neue',sans-serif"
     : "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif";
+
+  // 8. Selamlama
+  updateGreeting();
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+function getGreetingKey() {
+  const h = new Date().getHours();
+  if (h>=5  && h<12) return 'greeting_morning';
+  if (h>=12 && h<18) return 'greeting_afternoon';
+  if (h>=18 && h<22) return 'greeting_evening';
+  return 'greeting_night';
 }
 
 /* ══════════════════════════════════════════════════
@@ -2420,13 +2517,13 @@ function updateClock(){const now=new Date();document.getElementById('status-cloc
 function updateGreeting(){
   const h=new Date().getHours();
   let key='greeting_night';
-  if(h>=5&&h<12) key='greeting_morning';
+  if(h>=5 &&h<12) key='greeting_morning';
   else if(h>=12&&h<18) key='greeting_afternoon';
   else if(h>=18&&h<22) key='greeting_evening';
-  const el=document.getElementById('greeting-text');
-  if(el) el.textContent=t(key);
-  const nameEl=document.getElementById('user-display-name');
-  if(nameEl) nameEl.textContent=(appUser?.name)||'Şef';
+  const greetEl = document.getElementById('greeting-text');
+  if (greetEl) greetEl.textContent = t(key);
+  const nameEl = document.getElementById('user-display-name');
+  if (nameEl) nameEl.textContent = appUser?.name || 'Şef';
 }
 
 /* ══════════════════════════════════════════════════
