@@ -23,9 +23,10 @@
   --safe-left:env(safe-area-inset-left,0px);
   --safe-right:env(safe-area-inset-right,0px);
   --tab-bar-height:64px;
-  /* Dark theme defaults (fallback for before JS runs) */
+  /* Dark theme defaults (fallback — JS yüklenmeden önce koyu temayı uygular) */
   --bg:#0a0a0f; --glass:rgba(255,255,255,.07);
-  --glass-border:rgba(255,255,255,.15); --text:#fff;
+  --glass-border:rgba(255,255,255,.15);
+  --text:#ffffff;  /* HER ZAMAN beyaz (koyu mod varsayılan) */
   --text-sec:rgba(255,255,255,.6); --text-ter:rgba(255,255,255,.3);
   --modal-bg:rgba(18,18,30,.98); --settings-bg:rgba(255,255,255,.07);
   --divider:rgba(255,255,255,.08); --input-bg:rgba(255,255,255,.08);
@@ -67,6 +68,8 @@ margin:0;padding:0;box-sizing:border-box;
 -webkit-font-smoothing:antialiased;
 -webkit-user-select:none;user-select:none;
 -webkit-tap-highlight-color:transparent;
+/* Tüm renk değerleri CSS var’larına bağlı kalır */
+color:inherit;
 }
 input,textarea,select{-webkit-user-select:text;user-select:text;}
 html{
@@ -84,19 +87,19 @@ overscroll-behavior:none;
 -webkit-overflow-scrolling:touch;
 font-family:-apple-system,BlinkMacSystemFont,“SF Pro Display”,“SF Pro Text”,“Segoe UI”,Roboto,Helvetica,Arial,sans-serif,“Apple Color Emoji”,“Segoe UI Emoji”;
 color:var(–text);
-/* Body da background alır — html fixed olduğundan beyaz boşluk çıkmaz */
 background:var(–body-bg);
 transition:background .4s,color .4s;
 }
 #app{
 position:relative;
 width:100%;
-height:100%;  /* html position:fixed inset:0 → her cihazda tam dolar */
+height:100%;
+color:var(–text);  /* renk inheritance için kaynak */
 background:var(–bg);
 overflow:hidden;
 display:flex;
 flex-direction:column;
-transition:background .4s;
+transition:background .4s,color .4s;
 background-image:
 radial-gradient(ellipse 80% 50% at 20% 10%,rgba(59,158,255,.1) 0%,transparent 60%),
 radial-gradient(ellipse 60% 60% at 80% 80%,rgba(48,209,88,.07) 0%,transparent 60%),
@@ -120,13 +123,10 @@ position:absolute;inset:0;
 overflow-y:auto;overflow-x:hidden;
 overscroll-behavior:none;-webkit-overflow-scrolling:touch;
 /*
-Tab bar: 64px yükseklik
-Alt boşluk: 20px (tab bar’ın body altından mesafesi)  
-Safe area: notch/home indicator
-Nefes: 24px ekstra güvence
-Toplam en az: 108px
+Tab bar (64) + tab-bar bottom offset (16) + safe-area + güvenlik (40) = min 120px
+iPhone X/11/12+: 64+16+34+40 = 154px ✓
 */
-padding-bottom:calc(64px + 20px + env(safe-area-inset-bottom,0px) + 24px);
+padding-bottom:calc(64px + 16px + env(safe-area-inset-bottom, 0px) + 40px);
 display:none;scrollbar-width:none;
 -webkit-overflow-scrolling:touch;
 touch-action:pan-y;
@@ -140,26 +140,27 @@ padding-top:calc(env(safe-area-inset-top,44px) + 10px);
 
 /* ═══════════════════════════════════════
 TAB BAR — FLOATING LIQUID GLASS ISLAND
-position:fixed, body içinde, #app DIŞINDA
+position:fixed, DOĞRUDAN body altında
 ═══════════════════════════════════════ */
 .tab-bar{
 position:fixed !important;
-bottom:calc(20px + env(safe-area-inset-bottom,0px));
-left:20px;right:20px;
+/* Safari safe area: notch telefonda 0’dan fazla olur, notchsuzda 0 */
+bottom:calc(16px + env(safe-area-inset-bottom, 0px));
+left:16px;right:16px;
 height:64px;
 border-radius:30px;
-/* Liquid Glass */
-background:rgba(14,14,28,.78);
-backdrop-filter:blur(24px) saturate(1.8);
--webkit-backdrop-filter:blur(24px) saturate(1.8);
-border:.5px solid rgba(255,255,255,.16);
+background:rgba(14,14,28,.85);
+backdrop-filter:blur(28px) saturate(1.8);
+-webkit-backdrop-filter:blur(28px) saturate(1.8);
+border:.5px solid rgba(255,255,255,.18);
 box-shadow:
-0 10px 40px rgba(0,0,0,.4),
+0 12px 44px rgba(0,0,0,.45),
 0 2px 8px rgba(0,0,0,.3),
-inset 0 .5px 0 rgba(255,255,255,.12);
+inset 0 .5px 0 rgba(255,255,255,.14);
 display:flex;justify-content:space-around;align-items:center;
 padding:0 8px;
-z-index:99999;  /* En üstte her zaman */
+/* Tab bar her zaman modalların altında ama içeriklerin üstünde */
+z-index:1000;
 transition:opacity .3s,transform .35s cubic-bezier(.34,1.2,.64,1);
 }
 [data-theme=“light”] .tab-bar{
@@ -211,7 +212,7 @@ left:16px;right:16px;
 background:var(–modal-bg);backdrop-filter:blur(30px);
 border:.5px solid rgba(0,196,255,.3);border-radius:18px;
 padding:14px 16px;display:flex;align-items:center;gap:12px;
-z-index:300;transform:translateY(-120px);opacity:0;
+z-index:3000;transform:translateY(-120px);opacity:0;
 transition:all .4s cubic-bezier(.34,1.56,.64,1);
 box-shadow:0 8px 32px rgba(0,0,0,.3);
 }
@@ -441,6 +442,17 @@ background:linear-gradient(to bottom,rgba(255,255,255,.05),transparent);
 .qa-card.fridge{background:linear-gradient(135deg,rgba(48,209,88,.1),rgba(48,209,88,.03));border-color:rgba(48,209,88,.2);}
 .qa-card.market{background:linear-gradient(135deg,rgba(255,159,10,.1),rgba(255,159,10,.03));border-color:rgba(255,159,10,.2);}
 .qa-card.bar{background:linear-gradient(135deg,rgba(59,158,255,.12),rgba(0,212,255,.04));border-color:rgba(59,158,255,.2);}
+
+/* ═══════════════════════════════════════
+APPLE WATCH OVERLAPPING RINGS — aşım animasyonu
+═══════════════════════════════════════ */
+@keyframes ringOvershootPulse {
+0%,100%{ opacity:.8; filter:drop-shadow(0 0 4px currentColor); }
+50%    { opacity:1;  filter:drop-shadow(0 0 10px currentColor);}
+}
+.ring-overshooting {
+animation:ringOvershootPulse 1.2s ease-in-out infinite;
+}
 
 /* ═══════════════════════════════════════
 BAR MODULE — 3 İÇ İÇE HALKA — iOS 26 style
@@ -970,10 +982,11 @@ MODALS — SHARED
 ═══════════════════════════════════════ */
 .modal-overlay{
 position:fixed;inset:0;
-background:rgba(0,0,0,.4);
+background:rgba(0,0,0,.5);
 backdrop-filter:blur(12px) saturate(1.2);
 -webkit-backdrop-filter:blur(12px) saturate(1.2);
-z-index:500;
+/* Modallar tab bar’ın (z:1000) üzerinde olmalı */
+z-index:2000;
 display:flex;align-items:flex-end;
 opacity:0;pointer-events:none;transition:opacity .3s;
 }
@@ -1406,36 +1419,59 @@ ANIMATIONS
     <div class="bar-rings-label" data-i18n="barRingsLabel">Günlük Özet · Rapora Tıkla</div>
     <div class="bar-rings-svg-wrap">
       <svg width="220" height="220" viewBox="0 0 220 220">
+        <!-- Track circles (arka plan) -->
         <circle cx="110" cy="110" r="100" fill="none" stroke="rgba(59,158,255,.12)" stroke-width="14"/>
-        <circle id="ring-water" cx="110" cy="110" r="100" fill="none"
-          stroke="#3b9eff" stroke-width="14" stroke-linecap="round"
-          stroke-dasharray="628.3" stroke-dashoffset="628.3"
-          transform="rotate(-90 110 110)"
-          style="transition:stroke-dashoffset .7s cubic-bezier(.34,1.2,.64,1),stroke .4s"/>
         <circle cx="110" cy="110" r="78" fill="none" stroke="rgba(255,159,10,.12)" stroke-width="14"/>
-        <circle id="ring-kcal" cx="110" cy="110" r="78" fill="none"
-          stroke="#ff9f0a" stroke-width="14" stroke-linecap="round"
-          stroke-dasharray="490" stroke-dashoffset="490"
-          transform="rotate(-90 110 110)"
-          style="transition:stroke-dashoffset .7s cubic-bezier(.34,1.2,.64,1)"/>
         <circle cx="110" cy="110" r="56" fill="none" stroke="rgba(255,55,95,.12)" stroke-width="14"/>
-        <circle id="ring-sugar" cx="110" cy="110" r="56" fill="none"
-          stroke="#ff375f" stroke-width="14" stroke-linecap="round"
-          stroke-dasharray="351.9" stroke-dashoffset="351.9"
-          transform="rotate(-90 110 110)"
-          style="transition:stroke-dashoffset .7s cubic-bezier(.34,1.2,.64,1)"/>
-      </svg>
-      <div class="bar-rings-center">
-        <div class="brc-icon">🥤</div>
-        <div class="brc-val" id="bar-center-val">0 ml</div>
-        <div class="brc-label" id="bar-center-label" data-i18n="barTotal">Toplam</div>
-      </div>
-    </div>
-    <div class="bar-rings-legend">
-      <div class="brl-item"><div class="brl-dot" style="background:#3b9eff"></div><span data-i18n="legendWater">Su</span> <span class="brl-value" id="leg-water">0/0ml</span></div>
-      <div class="brl-item"><div class="brl-dot" style="background:#ff9f0a"></div>Kcal <span class="brl-value" id="leg-kcal">0</span></div>
-      <div class="brl-item"><div class="brl-dot" style="background:#ff375f"></div><span data-i18n="legendSugar">Şeker</span> <span class="brl-value" id="leg-sugar">0g</span></div>
-    </div>
+
+```
+    <!-- Ana progress halkaları -->
+    <circle id="ring-water" cx="110" cy="110" r="100" fill="none"
+      stroke="#3b9eff" stroke-width="14" stroke-linecap="round"
+      stroke-dasharray="628.3" stroke-dashoffset="628.3"
+      transform="rotate(-90 110 110)"
+      style="transition:stroke-dashoffset .7s cubic-bezier(.34,1.2,.64,1),stroke .4s"/>
+    <circle id="ring-kcal" cx="110" cy="110" r="78" fill="none"
+      stroke="#ff9f0a" stroke-width="14" stroke-linecap="round"
+      stroke-dasharray="490" stroke-dashoffset="490"
+      transform="rotate(-90 110 110)"
+      style="transition:stroke-dashoffset .7s cubic-bezier(.34,1.2,.64,1)"/>
+    <circle id="ring-sugar" cx="110" cy="110" r="56" fill="none"
+      stroke="#ff375f" stroke-width="14" stroke-linecap="round"
+      stroke-dasharray="351.9" stroke-dashoffset="351.9"
+      transform="rotate(-90 110 110)"
+      style="transition:stroke-dashoffset .7s cubic-bezier(.34,1.2,.64,1)"/>
+
+    <!-- Aşım overlay halkaları (hedef geçildiğinde görünür) -->
+    <circle id="ring-water-over" cx="110" cy="110" r="100" fill="none"
+      stroke="rgba(0,255,200,.85)" stroke-width="8" stroke-linecap="round"
+      stroke-dasharray="628.3" stroke-dashoffset="628.3"
+      transform="rotate(-90 110 110)" opacity="0"
+      style="transition:stroke-dashoffset .6s cubic-bezier(.34,1.2,.64,1),opacity .3s;filter:drop-shadow(0 0 6px rgba(0,255,200,.8))"/>
+    <circle id="ring-kcal-over" cx="110" cy="110" r="78" fill="none"
+      stroke="rgba(255,55,95,.9)" stroke-width="8" stroke-linecap="round"
+      stroke-dasharray="490" stroke-dashoffset="490"
+      transform="rotate(-90 110 110)" opacity="0"
+      style="transition:stroke-dashoffset .6s cubic-bezier(.34,1.2,.64,1),opacity .3s;filter:drop-shadow(0 0 5px rgba(255,55,95,.8))"/>
+    <circle id="ring-sugar-over" cx="110" cy="110" r="56" fill="none"
+      stroke="rgba(255,214,0,.9)" stroke-width="8" stroke-linecap="round"
+      stroke-dasharray="351.9" stroke-dashoffset="351.9"
+      transform="rotate(-90 110 110)" opacity="0"
+      style="transition:stroke-dashoffset .6s cubic-bezier(.34,1.2,.64,1),opacity .3s;filter:drop-shadow(0 0 5px rgba(255,214,0,.8))"/>
+  </svg>
+  <div class="bar-rings-center">
+    <div class="brc-icon">🥤</div>
+    <div class="brc-val" id="bar-center-val">0 ml</div>
+    <div class="brc-label" id="bar-center-label" data-i18n="barTotal">Toplam</div>
+  </div>
+</div>
+<div class="bar-rings-legend">
+  <div class="brl-item"><div class="brl-dot" style="background:#3b9eff"></div><span data-i18n="legendWater">Su</span> <span class="brl-value" id="leg-water">0/0ml</span></div>
+  <div class="brl-item"><div class="brl-dot" style="background:#ff9f0a"></div>Kcal <span class="brl-value" id="leg-kcal">0</span></div>
+  <div class="brl-item"><div class="brl-dot" style="background:#ff375f"></div><span data-i18n="legendSugar">Şeker</span> <span class="brl-value" id="leg-sugar">0g</span></div>
+</div>
+```
+
   </div>
 
   <!-- ── Günlük İçecekler — Inline 3×3 Grid ── -->
@@ -2077,12 +2113,13 @@ function applyThemeToDOM(r) {
     root.style.setProperty('--card-bg','rgba(255,255,255,.5)');
     root.style.setProperty('--settings-bg','rgba(255,255,255,.85)');
     document.body.style.background = '#f2f2f7';
-    if (app) { app.style.background = '#f2f2f7'; app.style.backgroundImage = 'radial-gradient(ellipse 80% 50% at 20% 10%,rgba(59,158,255,.06) 0%,transparent 60%),radial-gradient(ellipse 60% 60% at 80% 80%,rgba(48,209,88,.04) 0%,transparent 60%)'; }
+    document.body.style.color = '#1c1c1e';
+    if (app) { app.style.background = '#f2f2f7'; app.style.color = '#1c1c1e'; app.style.backgroundImage = 'radial-gradient(ellipse 80% 50% at 20% 10%,rgba(59,158,255,.06) 0%,transparent 60%),radial-gradient(ellipse 60% 60% at 80% 80%,rgba(48,209,88,.04) 0%,transparent 60%)'; }
   } else {
     root.style.setProperty('--bg','#0a0a0f');
     root.style.setProperty('--glass','rgba(255,255,255,.07)');
     root.style.setProperty('--glass-border','rgba(255,255,255,.15)');
-    root.style.setProperty('--text','#fff');
+    root.style.setProperty('--text','#ffffff');
     root.style.setProperty('--text-sec','rgba(255,255,255,.6)');
     root.style.setProperty('--text-ter','rgba(255,255,255,.3)');
     root.style.setProperty('--modal-bg','rgba(18,18,30,.98)');
@@ -2096,7 +2133,8 @@ function applyThemeToDOM(r) {
     root.style.setProperty('--auth-card','rgba(255,255,255,.06)');
     root.style.setProperty('--card-bg','rgba(255,255,255,.06)');
     document.body.style.background = '#0a0a0f';
-    if (app) { app.style.background = '#0a0a0f'; app.style.backgroundImage = 'radial-gradient(ellipse 80% 50% at 20% 10%,rgba(59,158,255,.1) 0%,transparent 60%),radial-gradient(ellipse 60% 60% at 80% 80%,rgba(48,209,88,.07) 0%,transparent 60%),radial-gradient(ellipse 50% 70% at 60% 30%,rgba(255,55,95,.05) 0%,transparent 60%)'; }
+    document.body.style.color = '#ffffff';
+    if (app) { app.style.background = '#0a0a0f'; app.style.color = '#ffffff'; app.style.backgroundImage = 'radial-gradient(ellipse 80% 50% at 20% 10%,rgba(59,158,255,.1) 0%,transparent 60%),radial-gradient(ellipse 60% 60% at 80% 80%,rgba(48,209,88,.07) 0%,transparent 60%),radial-gradient(ellipse 50% 70% at 60% 30%,rgba(255,55,95,.05) 0%,transparent 60%)'; }
   }
 
   /* Tab bar tema */
@@ -2919,37 +2957,59 @@ function addCustomDrink() {
 }
 
 /* ══════════════════════════════════════════════════
-   BAR — RINGS UPDATE
+   BAR — RINGS UPDATE (Apple Watch aşım mantığı)
 ══════════════════════════════════════════════════ */
 function updateBarRings() {
   const waterMax = RING_WATER_MAX();
-  const wPct  = Math.min(barTotals.water  / waterMax, 1);
-  const kPct  = Math.min(barTotals.kcal   / RING_KCAL_MAX, 1);
-  const sPct  = Math.min(barTotals.sugar  / RING_SUGAR_MAX, 1);
+  const rawWPct = barTotals.water  / waterMax;
+  const rawKPct = barTotals.kcal   / RING_KCAL_MAX;
+  const rawSPct = barTotals.sugar  / RING_SUGAR_MAX;
 
-  // Outer water ring circumference r=100 → 2π×100 ≈ 628.3
-  setRingProgress('ring-water', 628.3, wPct, '#3b9eff', wPct>=1?'#00ffcc':'#3b9eff');
-  // Mid kcal ring r=78 → 2π×78 ≈ 490
-  setRingProgress('ring-kcal', 490, kPct, '#ff9f0a', kPct>=1?'#ff375f':'#ff9f0a');
-  // Inner sugar ring r=56 → 2π×56 ≈ 351.9
-  setRingProgress('ring-sugar', 351.9, sPct, '#ff375f', sPct>=1?'#ffd60a':'#ff375f');
+  // Ana halka: max %100 dolar, sonra sabit kalır
+  const wPct = Math.min(rawWPct, 1);
+  const kPct = Math.min(rawKPct, 1);
+  const sPct = Math.min(rawSPct, 1);
+
+  setRingProgress('ring-water', 628.3, wPct, '#3b9eff', wPct >= 1 ? '#00ffcc' : '#3b9eff');
+  setRingProgress('ring-kcal',  490,   kPct, '#ff9f0a', kPct >= 1 ? '#ff375f' : '#ff9f0a');
+  setRingProgress('ring-sugar', 351.9, sPct, '#ff375f', sPct >= 1 ? '#ffd60a' : '#ff375f');
+
+  // Aşım overlay halkaları (hedef geçildiğinde)
+  setOverlayRing('ring-water-over', 628.3, rawWPct, '#00ffc8');
+  setOverlayRing('ring-kcal-over',  490,   rawKPct, '#ff375f');
+  setOverlayRing('ring-sugar-over', 351.9, rawSPct, '#ffd60a');
 
   // Center label
-  document.getElementById('bar-center-val').textContent = barTotals.totalMl >= 1000 ? (barTotals.totalMl/1000).toFixed(1)+'L' : barTotals.totalMl+'ml';
+  document.getElementById('bar-center-val').textContent =
+    barTotals.totalMl >= 1000 ? (barTotals.totalMl/1000).toFixed(1)+'L' : barTotals.totalMl+'ml';
 
   // Legend
   document.getElementById('leg-water').textContent = `${barTotals.water}/${waterMax}ml`;
-  document.getElementById('leg-kcal').textContent  = barTotals.kcal;
+  document.getElementById('leg-kcal').textContent  = Math.round(barTotals.kcal);
   document.getElementById('leg-sugar').textContent = barTotals.sugar+'g';
-
-  // Home widgets — su zaten updateWaterUI'da güncelleniyor
-  // Adım + yakılan kalori Apple Health simülasyonu tarafından güncelleniyor
 }
 
+/* Ana halka progress */
 function setRingProgress(id, circ, pct, defaultColor, activeColor) {
-  const el = document.getElementById(id); if(!el) return;
+  const el = document.getElementById(id); if (!el) return;
   el.style.strokeDashoffset = circ - pct * circ;
   el.style.stroke = pct > 0 ? activeColor : defaultColor;
+}
+
+/* Aşım (overshoot) overlay halkası — %100 üzerindeki kadarını gösterir */
+function setOverlayRing(id, circ, rawPct, color) {
+  const el = document.getElementById(id); if (!el) return;
+  if (rawPct <= 1) {
+    el.setAttribute('opacity', '0');
+    el.classList.remove('ring-overshooting');
+    return;
+  }
+  // Aşım miktarı: %100'ü geçen kısım (örn %1.3 → overlay %30 dolar)
+  const overPct = Math.min(rawPct - 1, 1);
+  el.style.strokeDashoffset = circ - overPct * circ;
+  el.style.stroke = color;
+  el.setAttribute('opacity', '1');
+  el.classList.add('ring-overshooting');
 }
 
 // renderHomeSugar: artık Bar widget'ı ayrı, home'da adım+kalori var
