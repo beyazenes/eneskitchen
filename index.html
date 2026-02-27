@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
@@ -8,10 +7,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Enes Kitchen">
-<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet" crossorigin="anonymous">
 <style>
 /* ═══════════════════════════════════════
-   CSS VARIABLES
+   CSS VARIABLES — Dark defaults at :root
 ═══════════════════════════════════════ */
 :root{
   --accent-blue:#3b9eff; --accent-cyan:#00d4ff;
@@ -21,11 +21,19 @@
   --safe-bottom:env(safe-area-inset-bottom,34px);
   --safe-left:env(safe-area-inset-left,0px);
   --safe-right:env(safe-area-inset-right,0px);
-  --tab-bar-height:60px;
-  --tab-total:calc(var(--tab-bar-height) + var(--safe-bottom) + 16px);
-  /* Bar rings */
-  --ring-water:#3b9eff; --ring-kcal:#ff9f0a; --ring-sugar:#ff375f;
+  --tab-bar-height:64px;
+  /* Dark theme defaults (fallback for before JS runs) */
+  --bg:#0a0a0f; --glass:rgba(255,255,255,.07);
+  --glass-border:rgba(255,255,255,.15); --text:#fff;
+  --text-sec:rgba(255,255,255,.6); --text-ter:rgba(255,255,255,.3);
+  --modal-bg:rgba(18,18,30,.98); --settings-bg:rgba(255,255,255,.07);
+  --divider:rgba(255,255,255,.08); --input-bg:rgba(255,255,255,.08);
+  --input-border:rgba(255,255,255,.2); --input-focus:rgba(59,158,255,.5);
+  --tab-bg:rgba(15,15,26,.92); --body-bg:#0a0a0f;
+  --toggle-off:rgba(255,255,255,.15); --auth-card:rgba(255,255,255,.06);
+  --auth-sep:rgba(255,255,255,.12); --card-bg:rgba(255,255,255,.06);
 }
+/* Dark theme */
 [data-theme="dark"]{
   --bg:#0a0a0f; --glass:rgba(255,255,255,.07);
   --glass-border:rgba(255,255,255,.15); --text:#fff;
@@ -37,6 +45,7 @@
   --toggle-off:rgba(255,255,255,.15); --auth-card:rgba(255,255,255,.06);
   --auth-sep:rgba(255,255,255,.12); --card-bg:rgba(255,255,255,.06);
 }
+/* Light theme */
 [data-theme="light"]{
   --bg:#f2f2f7; --glass:rgba(255,255,255,.75);
   --glass-border:rgba(0,0,0,.1); --text:#1c1c1e;
@@ -50,238 +59,241 @@
 }
 
 /* ═══════════════════════════════════════
-RESET & BASE
+   RESET & BASE
 ═══════════════════════════════════════ */
 *,*::before,*::after{
-margin:0;padding:0;box-sizing:border-box;
--webkit-font-smoothing:antialiased;
--webkit-user-select:none;user-select:none;
--webkit-tap-highlight-color:transparent;
+  margin:0;padding:0;box-sizing:border-box;
+  -webkit-font-smoothing:antialiased;
+  -webkit-user-select:none;user-select:none;
+  -webkit-tap-highlight-color:transparent;
 }
-input,textarea{-webkit-user-select:text;user-select:text;}
+input,textarea,select{-webkit-user-select:text;user-select:text;}
 html{
-width:100%; height:100%;
-overflow:hidden;
-overscroll-behavior:none;
+  height:100%;height:100dvh;
+  overflow:hidden;
+  overscroll-behavior:none;
+  /* Kritik: html elementi viewport containment sağlar */
+  position:fixed;inset:0;width:100%;
 }
 body{
-width:100%; height:100%;
-overflow:hidden;
-overscroll-behavior:none;
--webkit-overflow-scrolling:touch;
-background:var(–body-bg);
-font-family:-apple-system,“SF Pro Display”,“Helvetica Neue”,sans-serif;
-color:var(–text);
-transition:background .4s;
-/* Gradient tam arka plan — status bar dahil tüm ekranı kaplar */
-background-image:
-radial-gradient(ellipse 80% 50% at 20% 10%,rgba(59,158,255,.1) 0%,transparent 60%),
-radial-gradient(ellipse 60% 60% at 80% 80%,rgba(48,209,88,.07) 0%,transparent 60%),
-radial-gradient(ellipse 50% 70% at 60% 30%,rgba(255,55,95,.05) 0%,transparent 60%);
+  height:100%;width:100%;
+  overflow:hidden;overscroll-behavior:none;
+  -webkit-overflow-scrolling:touch;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+  color:var(--text);
+  background:var(--body-bg);
+  transition:background .4s,color .4s;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 20% 10%,rgba(59,158,255,.1) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 60% at 80% 80%,rgba(48,209,88,.07) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 70% at 60% 30%,rgba(255,55,95,.05) 0%,transparent 60%);
+  /* NO position:fixed here — this broke tab bar containment */
 }
+/* #app: theme container + scroll host */
 #app{
-/* ✅ Fix 1: #app viewport’un tamamı, position:relative YOK
-— bu sayede position:fixed tab-bar viewport’a göre konumlanır */
-width:100vw;
-height:100vh;
-height:100dvh;
-background:var(–bg);
-overflow:hidden;
-display:flex;
-flex-direction:column;
-transition:background .4s;
+  position:relative;
+  width:100%;height:100%;
+  background:var(--bg);
+  /* overflow:hidden kaldırıldı — fixed tab bar clip'lenmesini engelliyordu */
+  overflow:clip; /* sadece overflow-x'i etkiler, fixed children'ı etkilemez */
+  display:flex;flex-direction:column;
+  transition:background .4s;
 }
 
 /* status-bar kaldırıldı — telefonun kendi durum çubuğu kullanılıyor */
 
 /* ═══════════════════════════════════════
-SCREENS
+   SCREENS
 ═══════════════════════════════════════ */
-.screens{flex:1;overflow:hidden;position:relative;}
+.screens{
+  flex:1;
+  overflow:hidden;
+  position:relative;
+}
 .screen{
-position:absolute;inset:0;
-overflow-y:auto;overflow-x:hidden;
-overscroll-behavior:none;-webkit-overflow-scrolling:touch;
-/* floating bar için alt boşluk */
-padding:0 0 calc(var(–tab-total) + 28px);
-display:none;scrollbar-width:none;
+  position:absolute;inset:0;
+  overflow-y:auto;overflow-x:hidden;
+  overscroll-behavior:none;-webkit-overflow-scrolling:touch;
+  /* Floating bar (64px) + 20px margin + safe-bottom + extra breathing room */
+  padding-bottom:calc(64px + 20px + env(safe-area-inset-bottom,34px) + 16px);
+  display:none;scrollbar-width:none;
 }
 .screen::-webkit-scrollbar{display:none;}
 .screen.active{display:block;}
-.screen.auth-screen{padding:0;}
-
-/* İlk içerik safe-area altında başlasın */
+.screen.auth-screen{padding-bottom:0;}
+/* Safe-area top padding for first element in app screens */
 .screen:not(.auth-screen) > *:first-child{
-padding-top:calc(var(–safe-top) + 8px);
+  padding-top:calc(env(safe-area-inset-top,44px) + 10px);
 }
 
 /* ═══════════════════════════════════════
-TAB BAR — FLOATING LIQUID GLASS ISLAND
+   TAB BAR — FLOATING LIQUID GLASS ISLAND
+   position:fixed, body içinde, #app DIŞINDA
 ═══════════════════════════════════════ */
 .tab-bar{
-/* ✅ Floating island: ekrana yapışık değil, havada duruyor */
-position:fixed;
-bottom:calc(20px + var(–safe-bottom));
-left:20px;right:20px;
-height:64px;
-border-radius:30px;
-/* Liquid Glass efekti */
-background:rgba(18,18,30,.72);
-backdrop-filter:blur(28px) saturate(1.6);
--webkit-backdrop-filter:blur(28px) saturate(1.6);
-border:.5px solid rgba(255,255,255,.18);
-/* Dış parlama */
-box-shadow:
-0 8px 32px rgba(0,0,0,.35),
-0 2px 8px rgba(0,0,0,.25),
-inset 0 .5px 0 rgba(255,255,255,.15);
-display:flex;justify-content:space-around;align-items:center;
-padding:0 6px;z-index:9999;
-transition:opacity .25s,background .4s;
+  position:fixed !important;         /* override any inheritance */
+  bottom:calc(25px + env(safe-area-inset-bottom,0px));
+  left:20px;right:20px;
+  height:64px;
+  border-radius:30px;
+  /* Liquid Glass */
+  background:rgba(14,14,28,.78);
+  backdrop-filter:blur(24px) saturate(1.8);
+  -webkit-backdrop-filter:blur(24px) saturate(1.8);
+  border:.5px solid rgba(255,255,255,.16);
+  box-shadow:
+    0 10px 40px rgba(0,0,0,.4),
+    0 2px 8px rgba(0,0,0,.3),
+    inset 0 .5px 0 rgba(255,255,255,.12);
+  display:flex;justify-content:space-around;align-items:center;
+  padding:0 8px;
+  z-index:99999;  /* En üstte her zaman */
+  transition:opacity .3s,transform .35s cubic-bezier(.34,1.2,.64,1);
 }
-[data-theme=“light”] .tab-bar{
-background:rgba(240,240,250,.80);
-border-color:rgba(0,0,0,.1);
-box-shadow:0 8px 32px rgba(0,0,0,.15),0 2px 8px rgba(0,0,0,.08),inset 0 .5px 0 rgba(255,255,255,.9);
+[data-theme="light"] .tab-bar{
+  background:rgba(235,235,248,.88);
+  border-color:rgba(0,0,0,.08);
+  box-shadow:0 8px 30px rgba(0,0,0,.12),0 2px 6px rgba(0,0,0,.06),inset 0 .5px 0 rgba(255,255,255,.9);
 }
 .tab-bar.hidden{
-opacity:0;
-pointer-events:none;
-/* transform KULLANMA — position:fixed’ı viewport’tan koparır */
-visibility:hidden;
-transition:opacity .25s, visibility .25s;
+  opacity:0;
+  pointer-events:none;
+  transform:translateY(30px);
 }
 .tab-item{
-flex:1;display:flex;flex-direction:column;
-align-items:center;justify-content:center;
-gap:3px;color:var(–text-sec);
-cursor:pointer;touch-action:manipulation;
-transition:color .2s,transform .15s;min-width:0;
-padding:8px 4px;border-radius:20px;
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:2px;color:var(--text-sec);
+  cursor:pointer;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  transition:color .2s,transform .15s;
+  min-width:0;padding:10px 4px;border-radius:20px;
 }
-.tab-item:active{transform:scale(.88);}
-.tab-item .tab-icon{font-size:clamp(18px,5vw,22px);}
-.tab-item .tab-label{font-size:clamp(8px,2.2vw,10px);font-weight:600;letter-spacing:.2px;}
+.tab-item:active{transform:scale(.85);}
+.tab-item .tab-icon{font-size:clamp(18px,5vw,22px);line-height:1;}
+.tab-item .tab-label{font-size:clamp(8px,2.2vw,10px);font-weight:600;letter-spacing:.2px;margin-top:1px;}
 .tab-item.active{color:#00c4ff;}
-.tab-item.active .tab-icon{
-filter:drop-shadow(0 0 6px rgba(0,196,255,.6));
-}
+.tab-item.active .tab-icon{filter:drop-shadow(0 0 8px rgba(0,196,255,.7));}
 .water-fab{
-width:clamp(48px,13vw,58px);height:clamp(48px,13vw,58px);
-background:linear-gradient(135deg,#1a8fff,#00c4ff);
-border-radius:50%;display:flex;align-items:center;justify-content:center;
-font-size:clamp(20px,5.5vw,26px);
-box-shadow:0 4px 20px rgba(0,196,255,.5),0 0 0 2px rgba(255,255,255,.2),inset 0 1px 0 rgba(255,255,255,.3);
-cursor:pointer;touch-action:manipulation;
-transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s;
-flex-shrink:0;margin-top:-18px;
+  width:54px;height:54px;
+  background:linear-gradient(135deg,#1a8fff,#00c4ff);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;
+  box-shadow:0 4px 20px rgba(0,196,255,.55),0 0 0 2px rgba(255,255,255,.2);
+  cursor:pointer;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s;
+  flex-shrink:0;margin-top:-20px;
 }
-.water-fab:active{transform:scale(.85);box-shadow:0 2px 12px rgba(0,196,255,.4);}
+.water-fab:active{transform:scale(.84);}
 
 /* ═══════════════════════════════════════
-NOTIFICATION
+   NOTIFICATION
 ═══════════════════════════════════════ */
 .notif{
-position:fixed;top:calc(var(–safe-top) + 12px);
-left:16px;right:16px;
-background:var(–modal-bg);backdrop-filter:blur(30px);
-border:.5px solid rgba(0,196,255,.3);border-radius:18px;
-padding:14px 16px;display:flex;align-items:center;gap:12px;
-z-index:300;transform:translateY(-120px);opacity:0;
-transition:all .4s cubic-bezier(.34,1.56,.64,1);
-box-shadow:0 8px 32px rgba(0,0,0,.3);
+  position:fixed;top:calc(var(--safe-top) + 12px);
+  left:16px;right:16px;
+  background:var(--modal-bg);backdrop-filter:blur(30px);
+  border:.5px solid rgba(0,196,255,.3);border-radius:18px;
+  padding:14px 16px;display:flex;align-items:center;gap:12px;
+  z-index:300;transform:translateY(-120px);opacity:0;
+  transition:all .4s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 8px 32px rgba(0,0,0,.3);
 }
 .notif.show{transform:translateY(0);opacity:1;}
 .notif-icon{font-size:22px;}
 .notif-text .nt{font-size:13px;font-weight:600;}
-.notif-text .ns{font-size:12px;color:var(–text-sec);}
+.notif-text .ns{font-size:12px;color:var(--text-sec);}
 
 /* ═══════════════════════════════════════
-AUTH
+   AUTH
 ═══════════════════════════════════════ */
 .auth-bg{
-position:absolute;inset:0;
-background:linear-gradient(160deg,#0a0a0f 0%,#0d1220 40%,#080d18 100%);
-overflow:hidden;
+  position:absolute;inset:0;
+  background:linear-gradient(160deg,#0a0a0f 0%,#0d1220 40%,#080d18 100%);
+  overflow:hidden;
 }
 .auth-bg::before{
-content:””;position:absolute;width:300px;height:300px;border-radius:50%;
-background:radial-gradient(circle,rgba(59,158,255,.18) 0%,transparent 70%);
-top:-60px;left:-60px;animation:authPulse 8s ease-in-out infinite;
+  content:"";position:absolute;width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle,rgba(59,158,255,.18) 0%,transparent 70%);
+  top:-60px;left:-60px;animation:authPulse 8s ease-in-out infinite;
 }
 .auth-bg::after{
-content:””;position:absolute;width:250px;height:250px;border-radius:50%;
-background:radial-gradient(circle,rgba(48,209,88,.1) 0%,transparent 70%);
-bottom:-40px;right:-40px;animation:authPulse 8s ease-in-out infinite reverse;
+  content:"";position:absolute;width:250px;height:250px;border-radius:50%;
+  background:radial-gradient(circle,rgba(48,209,88,.1) 0%,transparent 70%);
+  bottom:-40px;right:-40px;animation:authPulse 8s ease-in-out infinite reverse;
 }
 @keyframes authPulse{0%,100%{transform:scale(1);opacity:.6;}50%{transform:scale(1.15);opacity:1;}}
 .auth-container{
-position:relative;z-index:2;display:flex;flex-direction:column;
-align-items:center;min-height:100%;
-padding:calc(var(–safe-top) + 32px) 24px calc(var(–safe-bottom) + 24px);
-overflow-y:auto;overscroll-behavior:none;
+  position:relative;z-index:2;display:flex;flex-direction:column;
+  align-items:center;min-height:100%;
+  padding:calc(var(--safe-top) + 32px) 24px calc(var(--safe-bottom) + 24px);
+  overflow-y:auto;overscroll-behavior:none;
 }
 .auth-logo{font-size:clamp(44px,12vw,60px);margin-bottom:8px;filter:drop-shadow(0 0 20px rgba(0,196,255,.4));}
 .auth-app-name{
-font-size:clamp(22px,6vw,30px);font-weight:700;letter-spacing:-.5px;
-background:linear-gradient(135deg,#fff 30%,rgba(0,212,255,.8));
--webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;
+  font-size:clamp(22px,6vw,30px);font-weight:700;letter-spacing:-.5px;
+  background:linear-gradient(135deg,#fff 30%,rgba(0,212,255,.8));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;
 }
 .auth-tagline{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:28px;text-align:center;}
 .auth-card{
-background:var(–auth-card);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
-border:.5px solid var(–auth-sep);border-radius:28px;
-padding:24px 20px;width:100%;max-width:480px;margin-bottom:20px;
+  background:var(--auth-card);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
+  border:.5px solid var(--auth-sep);border-radius:28px;
+  padding:24px 20px;width:100%;max-width:480px;margin-bottom:20px;
 }
 .auth-input-group{margin-bottom:14px;}
 .auth-input-label{
-font-size:11px;font-weight:600;color:rgba(255,255,255,.5);
-letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;padding-left:4px;
+  font-size:11px;font-weight:600;color:rgba(255,255,255,.5);
+  letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;padding-left:4px;
 }
 .auth-input{
-width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
-border-radius:14px;padding:14px 16px;font-size:16px;color:#fff;
-font-family:inherit;outline:none;transition:border-color .2s,box-shadow .2s;
--webkit-user-select:text;user-select:text;
+  width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;padding:14px 16px;font-size:16px;color:#fff;
+  font-family:inherit;outline:none;transition:border-color .2s,box-shadow .2s;
+  -webkit-user-select:text;user-select:text;
 }
 .auth-input::placeholder{color:rgba(255,255,255,.3);}
 .auth-input:focus{border-color:rgba(59,158,255,.6);box-shadow:0 0 0 3px rgba(59,158,255,.15);}
 .auth-btn-primary{
-width:100%;background:linear-gradient(135deg,#3b9eff,#00d4ff);
-border:none;border-radius:16px;padding:16px;
-font-size:16px;font-weight:700;color:#fff;cursor:pointer;
-font-family:inherit;box-shadow:0 6px 20px rgba(59,158,255,.4);
-transition:opacity .2s,transform .1s;margin-top:4px;
+  width:100%;background:linear-gradient(135deg,#3b9eff,#00d4ff);
+  border:none;border-radius:16px;padding:16px;
+  font-size:16px;font-weight:700;color:#fff;cursor:pointer;
+  font-family:inherit;box-shadow:0 6px 20px rgba(59,158,255,.4);
+  transition:opacity .2s,transform .1s;margin-top:4px;
 }
 .auth-btn-primary:active{transform:scale(.97);opacity:.9;}
 .auth-divider{display:flex;align-items:center;gap:12px;margin:18px 0;}
 .auth-divider span{font-size:12px;color:rgba(255,255,255,.35);}
-.auth-divider::before,.auth-divider::after{content:””;flex:1;height:.5px;background:rgba(255,255,255,.1);}
+.auth-divider::before,.auth-divider::after{content:"";flex:1;height:.5px;background:rgba(255,255,255,.1);}
 .auth-social-row{display:flex;gap:10px;}
 .auth-social-btn{
-flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
-border-radius:14px;padding:14px;display:flex;align-items:center;
-justify-content:center;gap:8px;cursor:pointer;
-transition:background .2s,transform .1s;font-size:14px;font-weight:600;
-color:rgba(255,255,255,.85);font-family:inherit;
+  flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;padding:14px;display:flex;align-items:center;
+  justify-content:center;gap:8px;cursor:pointer;
+  transition:background .2s,transform .1s;font-size:14px;font-weight:600;
+  color:rgba(255,255,255,.85);font-family:inherit;
 }
 .auth-social-btn:active{transform:scale(.96);background:rgba(255,255,255,.12);}
 .auth-social-icon{font-size:18px;}
 .auth-switch{font-size:13px;color:rgba(255,255,255,.5);text-align:center;}
 .auth-switch a{color:#3b9eff;font-weight:600;cursor:pointer;text-decoration:none;}
 .auth-error{
-background:rgba(255,55,95,.15);border:.5px solid rgba(255,55,95,.3);
-border-radius:12px;padding:10px 14px;font-size:13px;color:#ff6b8a;
-margin-bottom:12px;display:none;
+  background:rgba(255,55,95,.15);border:.5px solid rgba(255,55,95,.3);
+  border-radius:12px;padding:10px 14px;font-size:13px;color:#ff6b8a;
+  margin-bottom:12px;display:none;
 }
 .auth-error.show{display:block;}
 
 /* ═══════════════════════════════════════
-ONBOARDING
+   ONBOARDING
 ═══════════════════════════════════════ */
 .ob-container{
-position:relative;z-index:2;display:flex;flex-direction:column;
-height:100%;padding:calc(var(–safe-top) + 20px) 24px calc(var(–safe-bottom) + 24px);
+  position:relative;z-index:2;display:flex;flex-direction:column;
+  height:100%;padding:calc(var(--safe-top) + 20px) 24px calc(var(--safe-bottom) + 24px);
 }
 .ob-progress{display:flex;gap:6px;margin-bottom:36px;}
 .ob-dot{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.15);transition:background .4s;}
@@ -293,19 +305,19 @@ height:100%;padding:calc(var(–safe-top) + 20px) 24px calc(var(–safe-bottom) 
 .ob-step-title{font-size:clamp(20px,5.5vw,28px);font-weight:700;letter-spacing:-.5px;margin-bottom:8px;color:#fff;}
 .ob-step-sub{font-size:14px;color:rgba(255,255,255,.5);margin-bottom:24px;line-height:1.5;}
 .ob-input{
-width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
-border-radius:18px;padding:18px 20px;font-size:clamp(20px,5vw,26px);
-font-weight:600;color:#fff;font-family:inherit;outline:none;
-transition:border-color .2s,box-shadow .2s;text-align:center;
--webkit-user-select:text;user-select:text;
+  width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  border-radius:18px;padding:18px 20px;font-size:clamp(20px,5vw,26px);
+  font-weight:600;color:#fff;font-family:inherit;outline:none;
+  transition:border-color .2s,box-shadow .2s;text-align:center;
+  -webkit-user-select:text;user-select:text;
 }
 .ob-input::placeholder{font-size:16px;font-weight:400;color:rgba(255,255,255,.25);}
 .ob-input:focus{border-color:rgba(59,158,255,.6);box-shadow:0 0 0 4px rgba(59,158,255,.15);}
 .ob-options{display:flex;flex-direction:column;gap:10px;}
 .ob-option{
-background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
-border-radius:18px;padding:14px 18px;cursor:pointer;transition:all .2s;
-display:flex;align-items:center;gap:14px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:18px;padding:14px 18px;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;gap:14px;
 }
 .ob-option:active,.ob-option.selected{background:rgba(59,158,255,.15);border-color:rgba(59,158,255,.5);}
 .ob-option-icon{font-size:22px;flex-shrink:0;}
@@ -317,500 +329,744 @@ display:flex;align-items:center;gap:14px;
 .ob-spacer{flex:1;}
 .ob-btn-row{display:flex;gap:10px;align-items:center;}
 .ob-back-btn{
-width:46px;height:46px;background:rgba(255,255,255,.08);
-border:1px solid rgba(255,255,255,.1);border-radius:14px;
-display:flex;align-items:center;justify-content:center;
-cursor:pointer;font-size:18px;flex-shrink:0;transition:background .2s;
+  width:46px;height:46px;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.1);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:18px;flex-shrink:0;transition:background .2s;
 }
 .ob-back-btn:active{background:rgba(255,255,255,.14);}
 .ob-next-btn{
-flex:1;background:linear-gradient(135deg,#3b9eff,#00d4ff);
-border:none;border-radius:16px;padding:16px;font-size:16px;font-weight:700;
-color:#fff;cursor:pointer;font-family:inherit;
-box-shadow:0 6px 20px rgba(59,158,255,.35);transition:opacity .2s,transform .1s;
+  flex:1;background:linear-gradient(135deg,#3b9eff,#00d4ff);
+  border:none;border-radius:16px;padding:16px;font-size:16px;font-weight:700;
+  color:#fff;cursor:pointer;font-family:inherit;
+  box-shadow:0 6px 20px rgba(59,158,255,.35);transition:opacity .2s,transform .1s;
 }
 .ob-next-btn:active{transform:scale(.97);opacity:.9;}
 
 /* ═══════════════════════════════════════
-DASHBOARD
+   DASHBOARD
 ═══════════════════════════════════════ */
 .dash-header{
-padding:12px 20px;display:flex;
-justify-content:space-between;align-items:flex-start;
+  padding:12px 20px;display:flex;
+  justify-content:space-between;align-items:flex-start;
 }
-.dash-greeting{font-size:13px;color:var(–text-sec);font-weight:400;}
+.dash-greeting{font-size:13px;color:var(--text-sec);font-weight:400;}
 .dash-name{font-size:clamp(22px,6vw,28px);font-weight:700;letter-spacing:-.5px;margin-top:2px;}
 .dash-avatar{
-width:44px;height:44px;border-radius:50%;
-background:linear-gradient(135deg,#3b9eff,#00d4ff);
-display:flex;align-items:center;justify-content:center;
-font-size:20px;border:2px solid rgba(255,255,255,.2);cursor:pointer;flex-shrink:0;
+  width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,#3b9eff,#00d4ff);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;border:2px solid rgba(255,255,255,.2);cursor:pointer;flex-shrink:0;
 }
 .health-row{padding:0 16px;display:flex;gap:10px;margin-bottom:20px;}
 .health-widget{
-flex:1;min-width:0;background:var(–glass);border:.5px solid var(–glass-border);
-border-radius:20px;padding:14px 8px;
-display:flex;flex-direction:column;align-items:center;gap:5px;
-backdrop-filter:blur(20px);position:relative;overflow:hidden;transition:background .4s;
+  flex:1;min-width:0;background:var(--glass);border:.5px solid var(--glass-border);
+  border-radius:20px;padding:14px 8px;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  backdrop-filter:blur(20px);position:relative;overflow:hidden;transition:background .4s;
 }
 .health-widget::before{
-content:””;position:absolute;inset:0;height:40%;
-background:linear-gradient(to bottom,rgba(255,255,255,.05),transparent);
-border-radius:20px 20px 0 0;
+  content:"";position:absolute;inset:0;height:40%;
+  background:linear-gradient(to bottom,rgba(255,255,255,.05),transparent);
+  border-radius:20px 20px 0 0;
 }
 .hw-ring{
-width:clamp(44px,12vw,56px);height:clamp(44px,12vw,56px);
-border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;
+  width:clamp(44px,12vw,56px);height:clamp(44px,12vw,56px);
+  border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;
 }
 .hw-ring svg{position:absolute;top:0;left:0;width:100%;height:100%;transform:rotate(-90deg);}
 .hw-icon{font-size:clamp(16px,4.5vw,22px);z-index:1;}
 .hw-value{font-size:clamp(13px,3.5vw,16px);font-weight:700;letter-spacing:-.3px;}
-.hw-label{font-size:clamp(8px,2.2vw,11px);color:var(–text-sec);font-weight:500;text-align:center;}
+.hw-label{font-size:clamp(8px,2.2vw,11px);color:var(--text-sec);font-weight:500;text-align:center;}
 .section-header{padding:0 20px 12px;display:flex;justify-content:space-between;align-items:center;}
 .section-title{font-size:18px;font-weight:700;letter-spacing:-.3px;}
-.section-more{font-size:13px;color:var(–accent-blue);font-weight:500;cursor:pointer;padding:4px 0;}
+.section-more{font-size:13px;color:var(--accent-blue);font-weight:500;cursor:pointer;padding:4px 0;}
 .recipe-card{
-margin:0 16px 20px;
-background:linear-gradient(135deg,rgba(59,158,255,.15),rgba(0,212,255,.08));
-border:.5px solid rgba(59,158,255,.3);border-radius:var(–radius);
-overflow:hidden;position:relative;
+  margin:0 16px 20px;
+  background:linear-gradient(135deg,rgba(59,158,255,.15),rgba(0,212,255,.08));
+  border:.5px solid rgba(59,158,255,.3);border-radius:var(--radius);
+  overflow:hidden;position:relative;
 }
 .recipe-card::before{
-content:””;position:absolute;inset:0;height:50%;
-background:linear-gradient(to bottom,rgba(255,255,255,.06),transparent);
+  content:"";position:absolute;inset:0;height:50%;
+  background:linear-gradient(to bottom,rgba(255,255,255,.06),transparent);
 }
 .recipe-card-inner{padding:18px;position:relative;z-index:1;}
 .recipe-ai-tag{
-display:inline-flex;align-items:center;gap:6px;
-background:rgba(59,158,255,.2);border:.5px solid rgba(59,158,255,.4);
-border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;
-color:var(–accent-cyan);margin-bottom:10px;letter-spacing:.5px;
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(59,158,255,.2);border:.5px solid rgba(59,158,255,.4);
+  border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;
+  color:var(--accent-cyan);margin-bottom:10px;letter-spacing:.5px;
 }
 .recipe-name{font-size:clamp(18px,5vw,22px);font-weight:700;letter-spacing:-.5px;margin-bottom:6px;}
-.recipe-desc{font-size:13px;color:var(–text-sec);line-height:1.5;margin-bottom:14px;}
+.recipe-desc{font-size:13px;color:var(--text-sec);line-height:1.5;margin-bottom:14px;}
 .recipe-meta{display:flex;gap:clamp(8px,3vw,16px);flex-wrap:wrap;}
-.recipe-meta-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(–text-sec);}
+.recipe-meta-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-sec);}
 .recipe-emoji{font-size:clamp(32px,9vw,44px);position:absolute;right:18px;top:18px;z-index:1;}
 .recipe-btn{
-margin-top:14px;background:rgba(59,158,255,.25);border:.5px solid rgba(59,158,255,.5);
-border-radius:14px;padding:12px;text-align:center;font-size:14px;font-weight:600;
-color:var(–accent-cyan);cursor:pointer;
+  margin-top:14px;background:rgba(59,158,255,.25);border:.5px solid rgba(59,158,255,.5);
+  border-radius:14px;padding:12px;text-align:center;font-size:14px;font-weight:600;
+  color:var(--accent-cyan);cursor:pointer;
 }
 .recipe-btn:active{opacity:.8;}
 .quick-actions{
-padding:0 16px;display:grid;grid-template-columns:1fr 1fr;
-gap:12px;margin-bottom:20px;
+  padding:0 16px;display:grid;grid-template-columns:1fr 1fr;
+  gap:12px;margin-bottom:20px;
 }
 .qa-card{
-background:var(–glass);border:.5px solid var(–glass-border);
-border-radius:20px;padding:16px 14px;cursor:pointer;
-position:relative;overflow:hidden;transition:transform .2s,background .4s;
+  background:var(--glass);border:.5px solid var(--glass-border);
+  border-radius:20px;padding:16px 14px;cursor:pointer;
+  position:relative;overflow:hidden;transition:transform .2s,background .4s;
 }
 .qa-card:active{transform:scale(.96);}
 .qa-card::before{
-content:””;position:absolute;inset:0;height:50%;
-background:linear-gradient(to bottom,rgba(255,255,255,.05),transparent);
+  content:"";position:absolute;inset:0;height:50%;
+  background:linear-gradient(to bottom,rgba(255,255,255,.05),transparent);
 }
 .qa-emoji{font-size:clamp(24px,7vw,32px);margin-bottom:8px;}
 .qa-title{font-size:clamp(12px,3.5vw,14px);font-weight:600;margin-bottom:4px;}
-.qa-sub{font-size:clamp(10px,2.5vw,12px);color:var(–text-sec);}
+.qa-sub{font-size:clamp(10px,2.5vw,12px);color:var(--text-sec);}
 .qa-card.fridge{background:linear-gradient(135deg,rgba(48,209,88,.1),rgba(48,209,88,.03));border-color:rgba(48,209,88,.2);}
 .qa-card.market{background:linear-gradient(135deg,rgba(255,159,10,.1),rgba(255,159,10,.03));border-color:rgba(255,159,10,.2);}
 .qa-card.bar{background:linear-gradient(135deg,rgba(59,158,255,.12),rgba(0,212,255,.04));border-color:rgba(59,158,255,.2);}
 
 /* ═══════════════════════════════════════
-BAR MODULE — 3 İÇ İÇE HALKA
+   BAR MODULE — 3 İÇ İÇE HALKA — iOS 26 style
 ═══════════════════════════════════════ */
 .bar-rings-wrapper{
-display:flex;flex-direction:column;align-items:center;
-padding:20px 20px 10px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;
+  padding:20px 20px 12px;cursor:pointer;
+  position:relative;overflow:hidden;
+  margin:0 16px 4px;border-radius:28px;
+  background:rgba(255,255,255,.04);
+  border:.5px solid rgba(255,255,255,.1);
+  backdrop-filter:blur(24px) saturate(1.3);
+  -webkit-backdrop-filter:blur(24px) saturate(1.3);
+  box-shadow:
+    0 8px 32px rgba(0,0,0,.2),
+    inset 0 1px 0 rgba(255,255,255,.15),
+    inset 0 -1px 0 rgba(0,0,0,.08);
+  transition:transform .18s;
+}
+[data-theme="light"] .bar-rings-wrapper{
+  background:rgba(255,255,255,.65);
+  border-color:rgba(0,0,0,.07);
+  box-shadow:0 4px 20px rgba(0,0,0,.07),inset 0 1px 0 rgba(255,255,255,.9);
+}
+.bar-rings-wrapper:active{transform:scale(.985);}
+/* Specular shimmer */
+.bar-rings-wrapper::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,.1) 0%,transparent 100%);
+  border-radius:28px 28px 0 0;pointer-events:none;
 }
 .bar-rings-label{
-font-size:12px;font-weight:600;color:var(–text-ter);
-letter-spacing:.5px;text-transform:uppercase;
-margin-bottom:16px;text-align:center;
+  font-size:11px;font-weight:700;color:var(--text-ter);
+  letter-spacing:.8px;text-transform:uppercase;
+  margin-bottom:14px;text-align:center;
 }
 .bar-rings-svg-wrap{
-position:relative;width:220px;height:220px;
+  position:relative;width:220px;height:220px;
 }
 .bar-rings-svg-wrap svg{position:absolute;top:0;left:0;}
-/* Center text inside rings */
 .bar-rings-center{
-position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;
-pointer-events:none;
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;
+  pointer-events:none;
 }
 .bar-rings-center .brc-icon{font-size:28px;margin-bottom:2px;}
 .bar-rings-center .brc-val{font-size:17px;font-weight:700;letter-spacing:-.3px;line-height:1.1;}
-.bar-rings-center .brc-label{font-size:10px;font-weight:600;color:var(–text-sec);letter-spacing:.3px;text-transform:uppercase;}
-/* Legend under rings */
+.bar-rings-center .brc-label{font-size:10px;font-weight:600;color:var(--text-sec);letter-spacing:.3px;text-transform:uppercase;}
 .bar-rings-legend{
-display:flex;gap:20px;margin-top:16px;
+  display:flex;gap:20px;margin-top:14px;
 }
 .brl-item{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;}
-.brl-dot{width:10px;height:10px;border-radius:50%;}
-.brl-value{color:var(–text-sec);font-weight:400;margin-left:2px;}
+.brl-dot{width:8px;height:8px;border-radius:50%;}
+.brl-value{color:var(--text-sec);font-weight:400;margin-left:2px;}
 
 /* ═══════════════════════════════════════
-BAR — DRINK GRID (3×3)
+   iOS 26 LIQUID GLASS — CATEGORY GRID
 ═══════════════════════════════════════ */
-.drink-grid{
-padding:4px 16px 0;
-display:grid;grid-template-columns:repeat(3,1fr);
-gap:10px;
-}
-.drink-card{
-background:var(–glass);border:.5px solid var(–glass-border);
-border-radius:20px;padding:14px 8px;
-display:flex;flex-direction:column;align-items:center;gap:6px;
-cursor:pointer;transition:all .18s;position:relative;overflow:hidden;
--webkit-touch-callout:none;
-}
-.drink-card:active{transform:scale(.93);}
-.drink-card.pressing{
-background:rgba(59,158,255,.15);border-color:rgba(59,158,255,.4);
-}
-.drink-card::before{
-content:””;position:absolute;inset:0;height:45%;
-background:linear-gradient(to bottom,rgba(255,255,255,.06),transparent);
-}
-.dc-emoji{font-size:clamp(28px,8vw,34px);z-index:1;}
-.dc-name{font-size:clamp(11px,3vw,13px);font-weight:600;text-align:center;z-index:1;}
-.dc-val{font-size:clamp(9px,2.5vw,11px);color:var(–text-sec);text-align:center;z-index:1;}
-/* Long-press ripple */
-.drink-card .lp-ring{
-position:absolute;bottom:4px;left:50%;transform:translateX(-50%);
-width:0;height:3px;background:var(–accent-blue);border-radius:2px;
-transition:width var(–lp-duration,0ms) linear;
-}
-.drink-card.pressing .lp-ring{width:calc(100% - 24px);}
 
-/* Custom “Diğer” card */
-.drink-other-card{
-margin:10px 16px 0;
-background:linear-gradient(135deg,rgba(255,159,10,.1),rgba(255,214,0,.04));
-border:.5px solid rgba(255,159,10,.25);border-radius:20px;
-padding:16px 20px;cursor:pointer;
-display:flex;align-items:center;gap:14px;
-transition:transform .18s;
+/* Kategori başlığı */
+.bar-cat-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:4px 20px 10px;
 }
-.drink-other-card:active{transform:scale(.98);}
+.bar-cat-label{
+  font-size:12px;font-weight:700;color:var(--text-ter);
+  letter-spacing:.6px;text-transform:uppercase;
+}
+.bar-cat-hint{font-size:11px;color:var(--text-ter);}
+
+/* 2×2 kategori grid */
+.cat-grid{
+  padding:0 16px;
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:12px;
+}
+
+/* iOS 26 Liquid Glass tile */
+.cat-tile{
+  position:relative;overflow:hidden;
+  border-radius:24px;
+  padding:20px 16px 18px;
+  cursor:pointer;
+  touch-action:manipulation;
+  -webkit-touch-callout:none;
+  display:flex;flex-direction:column;align-items:flex-start;gap:6px;
+  transition:transform .18s cubic-bezier(.34,1.2,.64,1),box-shadow .2s;
+  /* Liquid Glass base */
+  background:rgba(255,255,255,.06);
+  border:.5px solid rgba(255,255,255,.15);
+  box-shadow:
+    0 8px 32px rgba(0,0,0,.25),
+    0 2px 8px rgba(0,0,0,.15),
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -1px 0 rgba(0,0,0,.1);
+  backdrop-filter:blur(20px) saturate(1.4);
+  -webkit-backdrop-filter:blur(20px) saturate(1.4);
+}
+/* Specular highlight — iOS glass shimmer */
+.cat-tile::before{
+  content:"";position:absolute;inset:0;border-radius:24px;
+  background:linear-gradient(160deg,rgba(255,255,255,.2) 0%,rgba(255,255,255,.04) 40%,transparent 60%);
+  pointer-events:none;z-index:0;
+}
+/* Color tint overlay per category */
+.cat-tile::after{
+  content:"";position:absolute;inset:0;border-radius:24px;
+  background:var(--cat-color,rgba(59,158,255,.1));
+  pointer-events:none;z-index:0;
+}
+[data-theme="light"] .cat-tile{
+  background:rgba(255,255,255,.65);
+  border-color:rgba(0,0,0,.08);
+  box-shadow:0 4px 20px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.9);
+}
+.cat-tile:active{transform:scale(.93);}
+.cat-tile:active::before{background:none;}
+
+.cat-emoji{font-size:36px;z-index:1;line-height:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3));}
+.cat-name{
+  font-size:16px;font-weight:700;letter-spacing:-.3px;z-index:1;
+  text-shadow:0 1px 4px rgba(0,0,0,.2);
+}
+.cat-count{
+  font-size:11px;font-weight:500;color:var(--text-sec);z-index:1;
+}
+.cat-glow{
+  position:absolute;bottom:-20px;right:-20px;
+  width:80px;height:80px;border-radius:50%;
+  background:var(--cat-glow,rgba(59,158,255,.25));
+  filter:blur(20px);pointer-events:none;z-index:0;
+}
+
+/* Custom "Diğer" card — Liquid Glass style */
+.drink-other-card{
+  margin:0 16px 4px;
+  position:relative;overflow:hidden;
+  border-radius:20px;
+  padding:16px 18px;
+  cursor:pointer;
+  touch-action:manipulation;
+  display:flex;align-items:center;gap:14px;
+  transition:transform .18s,opacity .15s;
+  background:rgba(255,159,10,.08);
+  border:.5px solid rgba(255,159,10,.22);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  box-shadow:0 4px 16px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.1);
+}
+.drink-other-card::before{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(160deg,rgba(255,255,255,.12) 0%,transparent 50%);
+  border-radius:20px;pointer-events:none;
+}
+.drink-other-card:active{transform:scale(.97);opacity:.9;}
+.doc-icon{font-size:28px;font-weight:300;color:var(--accent-orange);z-index:1;line-height:1;width:36px;text-align:center;}
+.doc-text{flex:1;z-index:1;}
+.doc-title{font-size:15px;font-weight:700;}
+.doc-sub{font-size:12px;color:var(--text-sec);margin-top:2px;}
+.doc-arrow{font-size:22px;color:var(--text-ter);z-index:1;}
 
 /* ═══════════════════════════════════════
-SCREEN HEADER & SEARCH & FILTERS
+   iOS 26 LIQUID GLASS — SUBDRİNK MODAL
+═══════════════════════════════════════ */
+.subdrink-header{
+  display:flex;align-items:center;gap:14px;
+  padding:4px 0 16px;
+  border-bottom:.5px solid var(--divider);
+  margin-bottom:14px;
+}
+.subdrink-cat-emoji{font-size:40px;filter:drop-shadow(0 2px 8px rgba(0,0,0,.3));}
+.subdrink-cat-name{font-size:20px;font-weight:700;letter-spacing:-.4px;}
+.subdrink-cat-count{font-size:12px;color:var(--text-sec);margin-top:2px;}
+
+/* İçecek listesi (alt menü) */
+.subdrink-list{display:flex;flex-direction:column;gap:8px;}
+
+.subdrink-row{
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;
+  border-radius:18px;
+  cursor:pointer;
+  touch-action:manipulation;
+  -webkit-touch-callout:none;
+  background:rgba(255,255,255,.05);
+  border:.5px solid rgba(255,255,255,.1);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  transition:transform .15s,background .15s;
+  box-shadow:0 2px 8px rgba(0,0,0,.12),inset 0 .5px 0 rgba(255,255,255,.12);
+}
+[data-theme="light"] .subdrink-row{
+  background:rgba(255,255,255,.7);
+  border-color:rgba(0,0,0,.07);
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+.subdrink-row::before{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(255,255,255,.08) 0%,transparent 40%);
+  border-radius:18px;pointer-events:none;
+}
+.subdrink-row:active{transform:scale(.97);background:rgba(59,158,255,.12);}
+.subdrink-row.pressing{background:rgba(59,158,255,.14);border-color:rgba(59,158,255,.4);}
+
+.sdr-emoji{font-size:28px;flex-shrink:0;z-index:1;}
+.sdr-info{flex:1;z-index:1;}
+.sdr-name{font-size:15px;font-weight:600;}
+.sdr-kcal{font-size:11px;color:var(--text-sec);margin-top:2px;}
+.sdr-action{
+  display:flex;gap:8px;align-items:center;z-index:1;
+}
+.sdr-add-btn{
+  width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,#3b9eff,#00d4ff);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:300;color:#fff;
+  box-shadow:0 3px 10px rgba(59,158,255,.4);
+  transition:transform .15s;flex-shrink:0;
+}
+.sdr-add-btn:active{transform:scale(.88);}
+/* Long-press bar under subdrink row */
+.sdr-lp-bar{
+  position:absolute;bottom:0;left:0;height:2px;
+  background:linear-gradient(90deg,#3b9eff,#00d4ff);
+  border-radius:0 0 18px 18px;
+  width:0;
+  transition:width var(--sdr-lp,0ms) linear;
+}
+.subdrink-row.pressing .sdr-lp-bar{width:100%;}
+
+/* ═══════════════════════════════════════
+   SCREEN HEADER & SEARCH & FILTERS
 ═══════════════════════════════════════ */
 .screen-header{padding:16px 20px;}
 .screen-title{font-size:clamp(24px,7vw,30px);font-weight:700;letter-spacing:-.5px;}
-.screen-sub{font-size:14px;color:var(–text-sec);margin-top:4px;}
+.screen-sub{font-size:14px;color:var(--text-sec);margin-top:4px;}
 .search-bar{
-margin:0 16px 16px;background:var(–glass);border:.5px solid var(–glass-border);
-border-radius:14px;padding:12px 16px;
-display:flex;align-items:center;gap:10px;backdrop-filter:blur(20px);
+  margin:0 16px 16px;background:var(--glass);border:.5px solid var(--glass-border);
+  border-radius:14px;padding:12px 16px;
+  display:flex;align-items:center;gap:10px;backdrop-filter:blur(20px);
 }
 .search-input{
-background:none;border:none;outline:none;font-size:15px;
-color:var(–text);width:100%;font-family:inherit;
--webkit-user-select:text;user-select:text;
+  background:none;border:none;outline:none;font-size:15px;
+  color:var(--text);width:100%;font-family:inherit;
+  -webkit-user-select:text;user-select:text;
 }
-.search-input::placeholder{color:var(–text-ter);}
+.search-input::placeholder{color:var(--text-ter);}
 .filter-scroll{
-padding:0 16px;display:flex;gap:8px;
-margin-bottom:16px;overflow-x:auto;scrollbar-width:none;
+  padding:0 16px;display:flex;gap:8px;
+  margin-bottom:16px;overflow-x:auto;scrollbar-width:none;
 }
 .filter-scroll::-webkit-scrollbar{display:none;}
 .filter-chip{
-background:var(–glass);border:.5px solid var(–glass-border);
-border-radius:20px;padding:8px 14px;font-size:13px;font-weight:500;
-white-space:nowrap;cursor:pointer;transition:all .2s;flex-shrink:0;
+  background:var(--glass);border:.5px solid var(--glass-border);
+  border-radius:20px;padding:8px 14px;font-size:13px;font-weight:500;
+  white-space:nowrap;cursor:pointer;transition:all .2s;flex-shrink:0;
 }
-.filter-chip.active{background:var(–accent-blue);border-color:var(–accent-blue);color:#fff;}
+.filter-chip.active{background:var(--accent-blue);border-color:var(--accent-blue);color:#fff;}
 
 /* ═══════════════════════════════════════
-INGREDIENT GRID (FRIDGE)
+   INGREDIENT GRID (FRIDGE)
 ═══════════════════════════════════════ */
 .ingredient-grid{
-padding:0 16px;display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:10px;margin-bottom:16px;
+  padding:0 16px;display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;margin-bottom:16px;
 }
 @media(max-width:320px){.ingredient-grid{grid-template-columns:repeat(3,1fr);}}
 .ing-item{
-background:var(–glass);border:.5px solid var(–glass-border);
-border-radius:16px;padding:clamp(8px,3vw,14px) 6px;
-display:flex;flex-direction:column;align-items:center;gap:5px;
-cursor:pointer;transition:all .2s;position:relative;
+  background:var(--glass);border:.5px solid var(--glass-border);
+  border-radius:16px;padding:clamp(8px,3vw,14px) 6px;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  cursor:pointer;transition:all .2s;position:relative;
 }
 .ing-item:active{transform:scale(.93);}
 .ing-item.selected{background:rgba(59,158,255,.15);border-color:rgba(59,158,255,.5);}
 .ing-item.selected::after{
-content:“✓”;position:absolute;top:4px;right:5px;
-font-size:9px;color:var(–accent-blue);font-weight:700;
+  content:"✓";position:absolute;top:4px;right:5px;
+  font-size:9px;color:var(--accent-blue);font-weight:700;
 }
 .ing-emoji{font-size:clamp(22px,6.5vw,28px);}
-.ing-name{font-size:clamp(9px,2.5vw,11px);color:var(–text-sec);text-align:center;line-height:1.2;}
+.ing-name{font-size:clamp(9px,2.5vw,11px);color:var(--text-sec);text-align:center;line-height:1.2;}
 .find-recipe-btn{
-margin:0 16px 20px;background:linear-gradient(135deg,#3b9eff,#00d4ff);
-border-radius:16px;padding:16px;text-align:center;font-size:16px;font-weight:700;
-cursor:pointer;box-shadow:0 8px 24px rgba(59,158,255,.3);
-transition:opacity .2s,transform .1s;color:#fff;
+  margin:0 16px 20px;background:linear-gradient(135deg,#3b9eff,#00d4ff);
+  border-radius:16px;padding:16px;text-align:center;font-size:16px;font-weight:700;
+  cursor:pointer;box-shadow:0 8px 24px rgba(59,158,255,.3);
+  transition:opacity .2s,transform .1s;color:#fff;
 }
 .find-recipe-btn:active{transform:scale(.98);opacity:.9;}
 
 /* ═══════════════════════════════════════
-MARKET
+   MARKET
 ═══════════════════════════════════════ */
 .market-item{
-background:var(–glass);border:.5px solid var(–glass-border);
-border-radius:18px;padding:14px 16px;margin-bottom:10px;
-display:flex;align-items:center;gap:12px;
-animation:fadeSlideUp .35s cubic-bezier(.34,1.2,.64,1) both;
-overflow:hidden;transition:opacity .3s,background .2s;
+  background:var(--glass);border:.5px solid var(--glass-border);
+  border-radius:18px;padding:14px 16px;margin-bottom:10px;
+  display:flex;align-items:center;gap:12px;
+  animation:fadeSlideUp .35s cubic-bezier(.34,1.2,.64,1) both;
+  overflow:hidden;transition:opacity .3s,background .2s;
 }
 .market-item.done{opacity:.45;background:rgba(48,209,88,.05);border-color:rgba(48,209,88,.2);}
 .market-check-btn{
-width:28px;height:28px;border-radius:50%;border:2px solid var(–glass-border);
-display:flex;align-items:center;justify-content:center;cursor:pointer;
-transition:all .2s;flex-shrink:0;font-size:13px;background:transparent;color:transparent;
+  width:28px;height:28px;border-radius:50%;border:2px solid var(--glass-border);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:all .2s;flex-shrink:0;font-size:13px;background:transparent;color:transparent;
 }
-.market-item.done .market-check-btn{background:var(–accent-green);border-color:var(–accent-green);color:#fff;}
+.market-item.done .market-check-btn{background:var(--accent-green);border-color:var(--accent-green);color:#fff;}
 .market-item-name{flex:1;font-size:15px;font-weight:500;transition:all .2s;min-width:0;}
-.market-item.done .market-item-name{text-decoration:line-through;color:var(–text-sec);}
+.market-item.done .market-item-name{text-decoration:line-through;color:var(--text-sec);}
 .market-delete-btn{
-width:28px;height:28px;border-radius:50%;background:rgba(255,55,95,.12);border:none;
-display:flex;align-items:center;justify-content:center;cursor:pointer;
-font-size:13px;color:var(–accent-pink);transition:all .2s;flex-shrink:0;
+  width:28px;height:28px;border-radius:50%;background:rgba(255,55,95,.12);border:none;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:13px;color:var(--accent-pink);transition:all .2s;flex-shrink:0;
 }
 .market-delete-btn:active{background:rgba(255,55,95,.3);transform:scale(1.1);}
 
 /* ═══════════════════════════════════════
-PROFILE
+   PROFILE
 ═══════════════════════════════════════ */
-.profile-hero{padding:16px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:8px;}
-.profile-avatar-big{
-width:clamp(72px,20vw,96px);height:clamp(72px,20vw,96px);border-radius:50%;
-background:linear-gradient(135deg,#3b9eff,#00d4ff,#30d158);
-display:flex;align-items:center;justify-content:center;
-font-size:clamp(32px,9vw,44px);border:3px solid rgba(255,255,255,.2);
-box-shadow:0 8px 32px rgba(59,158,255,.3);
+.profile-hero{padding:20px 20px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:8px;}
+
+/* Avatar — dairesel fotoğraf veya emoji */
+.profile-avatar-wrap{
+  position:relative;cursor:pointer;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
 }
-.profile-email{font-size:13px;color:var(–text-sec);}
+.profile-avatar-big{
+  width:clamp(80px,22vw,100px);height:clamp(80px,22vw,100px);
+  border-radius:50%;
+  background:linear-gradient(135deg,#3b9eff,#00d4ff,#30d158);
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(34px,10vw,46px);
+  border:3px solid rgba(255,255,255,.25);
+  box-shadow:0 8px 32px rgba(59,158,255,.35),0 0 0 1px rgba(255,255,255,.08);
+  overflow:hidden;  /* fotoğraf için */
+  transition:transform .2s,box-shadow .2s;
+}
+.profile-avatar-big img{
+  width:100%;height:100%;object-fit:cover;border-radius:50%;
+}
+.profile-avatar-wrap:active .profile-avatar-big{transform:scale(.94);}
+/* Düzenle rozeti */
+.profile-avatar-edit{
+  position:absolute;bottom:2px;right:2px;
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,#3b9eff,#00d4ff);
+  border:2px solid var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;
+  box-shadow:0 2px 8px rgba(59,158,255,.4);
+  pointer-events:none;
+}
+/* Gizli file input */
+#avatar-file-input{display:none;}
+
+.profile-name-display{
+  font-size:22px;font-weight:700;letter-spacing:-.4px;
+  text-align:center;
+}
+.profile-email{font-size:13px;color:var(--text-sec);}
 .premium-badge{
-display:inline-flex;align-items:center;gap:6px;
-background:linear-gradient(135deg,rgba(255,214,0,.2),rgba(255,159,10,.2));
-border:.5px solid rgba(255,214,0,.4);border-radius:20px;
-padding:6px 16px;font-size:12px;font-weight:600;color:#ffd60a;
+  display:inline-flex;align-items:center;gap:6px;
+  background:linear-gradient(135deg,rgba(255,214,0,.2),rgba(255,159,10,.2));
+  border:.5px solid rgba(255,214,0,.4);border-radius:20px;
+  padding:6px 16px;font-size:12px;font-weight:600;color:#ffd60a;
 }
 .profile-stats{
-margin:0 16px 16px;background:var(–glass);border:.5px solid var(–glass-border);
-border-radius:20px;padding:16px;display:flex;transition:background .4s;
+  margin:0 16px 16px;background:var(--glass);border:.5px solid var(--glass-border);
+  border-radius:20px;padding:16px;display:flex;transition:background .4s;
+}
+
+/* FIX 3: Birim seçici satırı */
+.unit-toggle-row{
+  display:flex;justify-content:center;gap:10px;
+  padding:0 16px 14px;
+}
+.unit-group{
+  display:flex;border-radius:10px;overflow:hidden;
+  border:.5px solid var(--glass-border);background:var(--glass);
+}
+.unit-btn{
+  padding:6px 14px;font-size:12px;font-weight:600;
+  color:var(--text-sec);cursor:pointer;touch-action:manipulation;
+  transition:background .18s,color .18s;white-space:nowrap;
+}
+.unit-btn.active{
+  background:var(--accent-blue);color:#fff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2);
 }
 .stat-item{flex:1;text-align:center;position:relative;min-width:0;}
 .stat-item+.stat-item::before{
-content:””;position:absolute;left:0;top:10%;height:80%;
-width:.5px;background:var(–glass-border);
+  content:"";position:absolute;left:0;top:10%;height:80%;
+  width:.5px;background:var(--glass-border);
 }
 .stat-val{font-size:clamp(18px,5vw,24px);font-weight:700;letter-spacing:-.5px;}
-.stat-label{font-size:clamp(9px,2.5vw,12px);color:var(–text-sec);margin-top:2px;}
+.stat-label{font-size:clamp(9px,2.5vw,12px);color:var(--text-sec);margin-top:2px;}
 .stat-input{
-background:none;border:none;outline:none;font-size:clamp(18px,5vw,24px);
-font-weight:700;letter-spacing:-.5px;color:var(–text);width:100%;
-text-align:center;font-family:inherit;-webkit-user-select:text;user-select:text;
+  background:none;border:none;outline:none;font-size:clamp(18px,5vw,24px);
+  font-weight:700;letter-spacing:-.5px;color:var(--text);width:100%;
+  text-align:center;font-family:inherit;-webkit-user-select:text;user-select:text;
 }
 .settings-section{padding:0 16px;margin-bottom:16px;}
 .settings-label{
-font-size:12px;font-weight:600;color:var(–text-ter);letter-spacing:.5px;
-text-transform:uppercase;margin-bottom:8px;padding-left:4px;
+  font-size:12px;font-weight:600;color:var(--text-ter);letter-spacing:.5px;
+  text-transform:uppercase;margin-bottom:8px;padding-left:4px;
 }
 .settings-group{
-background:var(–settings-bg);border:.5px solid var(–glass-border);
-border-radius:20px;overflow:hidden;transition:background .4s;
+  background:var(--settings-bg);border:.5px solid var(--glass-border);
+  border-radius:20px;overflow:hidden;transition:background .4s;
 }
 .settings-row{
-display:flex;align-items:center;padding:14px 16px;gap:12px;
-cursor:pointer;transition:background .2s;position:relative;
+  display:flex;align-items:center;padding:14px 16px;gap:12px;
+  cursor:pointer;transition:background .2s;position:relative;
 }
 .settings-row:active{background:rgba(128,128,128,.08);}
 .settings-row+.settings-row::before{
-content:””;position:absolute;left:50px;right:16px;top:0;height:.5px;background:var(–divider);
+  content:"";position:absolute;left:50px;right:16px;top:0;height:.5px;background:var(--divider);
 }
 .sr-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
 .sr-text{flex:1;min-width:0;}
 .sr-title{font-size:15px;font-weight:500;}
-.sr-sub{font-size:12px;color:var(–text-sec);margin-top:1px;}
-.sr-arrow{font-size:13px;color:var(–text-ter);}
+.sr-sub{font-size:12px;color:var(--text-sec);margin-top:1px;}
+.sr-arrow{font-size:13px;color:var(--text-ter);}
 .toggle{
-width:44px;height:26px;background:var(–accent-green);border-radius:13px;
-position:relative;cursor:pointer;transition:background .3s;flex-shrink:0;
+  width:44px;height:26px;background:var(--accent-green);border-radius:13px;
+  position:relative;cursor:pointer;transition:background .3s;flex-shrink:0;
 }
 .toggle::after{
-content:””;position:absolute;top:3px;left:21px;width:20px;height:20px;
-background:#fff;border-radius:50%;transition:left .3s;box-shadow:0 2px 4px rgba(0,0,0,.3);
+  content:"";position:absolute;top:3px;left:21px;width:20px;height:20px;
+  background:#fff;border-radius:50%;transition:left .3s;box-shadow:0 2px 4px rgba(0,0,0,.3);
 }
-.toggle.off{background:var(–toggle-off);}
+.toggle.off{background:var(--toggle-off);}
 .toggle.off::after{left:3px;}
 .bmi-badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
 .bmi-low{background:rgba(59,158,255,.2);color:#3b9eff;}
 .bmi-ok{background:rgba(48,209,88,.2);color:#30d158;}
 .bmi-high{background:rgba(255,159,10,.2);color:#ff9f0a;}
 .bmi-vhigh{background:rgba(255,55,95,.2);color:#ff375f;}
+
+/* FIX 5: Çıkış butonu */
+.logout-btn{
+  width:100%;
+  background:linear-gradient(135deg,#ff375f,#ff1744);
+  color:#fff;border:none;
+  padding:16px;border-radius:16px;
+  font-weight:700;font-size:17px;
+  cursor:pointer;touch-action:manipulation;
+  font-family:inherit;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  box-shadow:0 6px 24px rgba(255,55,95,.35),inset 0 1px 0 rgba(255,255,255,.2);
+  transition:transform .15s,opacity .15s;
+}
+.logout-btn:active{transform:scale(.97);opacity:.92;}
 .api-key-section{
-background:rgba(255,159,10,.06);border:.5px solid rgba(255,159,10,.2);
-border-radius:20px;padding:16px;margin:0 16px 16px;
-display:flex;flex-direction:column;gap:10px;
+  background:rgba(255,159,10,.06);border:.5px solid rgba(255,159,10,.2);
+  border-radius:20px;padding:16px;margin:0 16px 16px;
+  display:flex;flex-direction:column;gap:10px;
 }
 .api-key-input{
-background:var(–input-bg);border:1px solid var(–input-border);
-border-radius:12px;padding:12px 14px;font-size:14px;color:var(–text);
-font-family:inherit;outline:none;width:100%;letter-spacing:.5px;
-transition:border-color .2s;-webkit-user-select:text;user-select:text;
+  background:var(--input-bg);border:1px solid var(--input-border);
+  border-radius:12px;padding:12px 14px;font-size:14px;color:var(--text);
+  font-family:inherit;outline:none;width:100%;letter-spacing:.5px;
+  transition:border-color .2s;-webkit-user-select:text;user-select:text;
 }
 .api-key-input:focus{border-color:rgba(255,159,10,.6);box-shadow:0 0 0 3px rgba(255,159,10,.1);}
 
 /* ═══════════════════════════════════════
-DETAIL (AI Recipe)
+   DETAIL (AI Recipe)
 ═══════════════════════════════════════ */
 .step-card{
-background:var(–glass);border:.5px solid var(–glass-border);
-border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;
+  background:var(--glass);border:.5px solid var(--glass-border);
+  border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;
 }
 .step-num{
-width:26px;height:26px;border-radius:50%;
-background:linear-gradient(135deg,#3b9eff,#00d4ff);
-display:flex;align-items:center;justify-content:center;
-font-size:12px;font-weight:700;color:#fff;flex-shrink:0;margin-top:1px;
+  width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(135deg,#3b9eff,#00d4ff);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#fff;flex-shrink:0;margin-top:1px;
 }
-.step-text{font-size:14px;line-height:1.6;color:var(–text-sec);flex:1;}
+.step-text{font-size:14px;line-height:1.6;color:var(--text-sec);flex:1;}
 .ing-chip{
-background:var(–glass);border:.5px solid var(–glass-border);
-border-radius:20px;padding:6px 12px;font-size:13px;font-weight:500;
-display:inline-flex;align-items:center;gap:5px;
+  background:var(--glass);border:.5px solid var(--glass-border);
+  border-radius:20px;padding:6px 12px;font-size:13px;font-weight:500;
+  display:inline-flex;align-items:center;gap:5px;
 }
 
 /* ═══════════════════════════════════════
-MODALS — SHARED
+   MODALS — SHARED
 ═══════════════════════════════════════ */
 .modal-overlay{
-position:fixed;inset:0;background:rgba(0,0,0,.55);
-backdrop-filter:blur(10px);z-index:500;
-display:flex;align-items:flex-end;
-opacity:0;pointer-events:none;transition:opacity .3s;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.4);
+  backdrop-filter:blur(12px) saturate(1.2);
+  -webkit-backdrop-filter:blur(12px) saturate(1.2);
+  z-index:500;
+  display:flex;align-items:flex-end;
+  opacity:0;pointer-events:none;transition:opacity .3s;
 }
 .modal-overlay.show{opacity:1;pointer-events:all;}
 .modal-sheet{
-width:100%;background:var(–modal-bg);border-radius:28px 28px 0 0;
-padding:16px 20px calc(var(–safe-bottom) + 24px);
-border-top:.5px solid var(–glass-border);
-transform:translateY(100%);transition:transform .4s cubic-bezier(.34,1.1,.64,1);
-/* ✅ Fix 5: Modal içerik ekranı taşmasın, kaydırılabilsin */
-max-height:88vh;
-overflow-y:auto;
-overscroll-behavior:contain;
--webkit-overflow-scrolling:touch;
+  width:100%;
+  /* iOS 26 Liquid Glass */
+  background:rgba(22,22,38,.88);
+  backdrop-filter:blur(36px) saturate(1.6);
+  -webkit-backdrop-filter:blur(36px) saturate(1.6);
+  border-radius:28px 28px 0 0;
+  padding:16px 20px calc(env(safe-area-inset-bottom,20px) + 20px);
+  border-top:.5px solid rgba(255,255,255,.2);
+  box-shadow:
+    0 -8px 40px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.2);
+  transform:translateY(100%);
+  transition:transform .4s cubic-bezier(.34,1.1,.64,1);
+  max-height:88vh;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+[data-theme="light"] .modal-sheet{
+  background:rgba(245,245,252,.92);
+  border-top-color:rgba(0,0,0,.08);
+  box-shadow:0 -4px 30px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.9);
 }
 .modal-overlay.show .modal-sheet{transform:translateY(0);}
-.modal-handle{width:36px;height:4px;background:var(–glass-border);border-radius:2px;margin:0 auto 20px;}
+.modal-handle{width:36px;height:4px;background:var(--glass-border);border-radius:2px;margin:0 auto 20px;}
 .modal-title{font-size:18px;font-weight:700;letter-spacing:-.3px;margin-bottom:4px;}
-.modal-sub{font-size:13px;color:var(–text-sec);margin-bottom:20px;}
+.modal-sub{font-size:13px;color:var(--text-sec);margin-bottom:20px;}
 .option-row{
-display:flex;align-items:center;gap:14px;padding:13px 14px;
-border-radius:16px;cursor:pointer;transition:background .2s;
-margin-bottom:6px;border:.5px solid transparent;
+  display:flex;align-items:center;gap:14px;padding:13px 14px;
+  border-radius:16px;cursor:pointer;transition:background .2s;
+  margin-bottom:6px;border:.5px solid transparent;
 }
-.option-row:active{background:var(–glass);}
+.option-row:active{background:var(--glass);}
 .option-row.selected{background:rgba(59,158,255,.14);border-color:rgba(59,158,255,.4);}
 .option-icon{font-size:26px;flex-shrink:0;}
 .option-icon.themed{
-width:44px;height:44px;border-radius:12px;
-display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;
 }
 .option-title{font-size:16px;font-weight:600;}
-.option-sub{font-size:12px;color:var(–text-sec);margin-top:2px;}
-.option-check{font-size:18px;color:var(–accent-blue);opacity:0;transition:opacity .2s;margin-left:auto;flex-shrink:0;}
+.option-sub{font-size:12px;color:var(--text-sec);margin-top:2px;}
+.option-check{font-size:18px;color:var(--accent-blue);opacity:0;transition:opacity .2s;margin-left:auto;flex-shrink:0;}
 .option-row.selected .option-check{opacity:1;}
 
 /* ═══════════════════════════════════════
-BAR — AMOUNT PICKER MODAL
+   BAR — AMOUNT PICKER MODAL
 ═══════════════════════════════════════ */
 .amount-grid{
-display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;
 }
 .amount-chip{
-background:var(–glass);border:.5px solid var(–glass-border);
-border-radius:14px;padding:14px 4px;text-align:center;
-font-size:14px;font-weight:600;cursor:pointer;transition:all .18s;
+  background:var(--glass);border:.5px solid var(--glass-border);
+  border-radius:14px;padding:14px 4px;text-align:center;
+  font-size:14px;font-weight:600;cursor:pointer;transition:all .18s;
 }
 .amount-chip:active,.amount-chip.selected{
-background:rgba(59,158,255,.2);border-color:rgba(59,158,255,.5);color:var(–accent-cyan);
+  background:rgba(59,158,255,.2);border-color:rgba(59,158,255,.5);color:var(--accent-cyan);
 }
 
 /* ═══════════════════════════════════════
-BAR — DAILY REPORT MODAL
+   BAR — DAILY REPORT MODAL
 ═══════════════════════════════════════ */
 .report-row{
-display:flex;align-items:center;gap:12px;
-padding:12px 0;border-bottom:.5px solid var(–divider);
+  display:flex;align-items:center;gap:12px;
+  padding:12px 0;border-bottom:.5px solid var(--divider);
 }
 .report-row:last-child{border-bottom:none;}
 .report-emoji{font-size:26px;flex-shrink:0;}
 .report-info{flex:1;min-width:0;}
 .report-name{font-size:14px;font-weight:600;}
-.report-time{font-size:11px;color:var(–text-ter);margin-top:1px;}
-.report-vals{text-align:right;font-size:12px;color:var(–text-sec);}
-.report-vals strong{display:block;font-size:14px;font-weight:700;color:var(–text);}
+.report-time{font-size:11px;color:var(--text-ter);margin-top:1px;}
+.report-vals{text-align:right;font-size:12px;color:var(--text-sec);}
+.report-vals strong{display:block;font-size:14px;font-weight:700;color:var(--text);}
 
 /* Stat Totals */
 .bar-totals{
-display:grid;grid-template-columns:repeat(3,1fr);
-gap:10px;margin-bottom:20px;
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:10px;margin-bottom:20px;
 }
 .bt-item{
-background:var(–glass);border:.5px solid var(–glass-border);
-border-radius:18px;padding:14px 10px;text-align:center;
+  background:var(--glass);border:.5px solid var(--glass-border);
+  border-radius:18px;padding:14px 10px;text-align:center;
 }
 .bt-icon{font-size:22px;margin-bottom:6px;}
 .bt-val{font-size:18px;font-weight:700;letter-spacing:-.3px;}
-.bt-label{font-size:10px;font-weight:600;color:var(–text-sec);text-transform:uppercase;letter-spacing:.3px;margin-top:2px;}
+.bt-label{font-size:10px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:.3px;margin-top:2px;}
 
 /* ═══════════════════════════════════════
-CUSTOM ENTRY MODAL
+   CUSTOM ENTRY MODAL
 ═══════════════════════════════════════ */
 .form-row{margin-bottom:14px;}
 .form-label{
-font-size:11px;font-weight:600;color:var(–text-sec);
-letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;padding-left:2px;
+  font-size:11px;font-weight:600;color:var(--text-sec);
+  letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;padding-left:2px;
 }
 .form-input{
-width:100%;background:var(–input-bg);border:1px solid var(–input-border);
-border-radius:14px;padding:13px 16px;font-size:15px;color:var(–text);
-font-family:inherit;outline:none;transition:border-color .2s;
--webkit-user-select:text;user-select:text;
+  width:100%;background:var(--input-bg);border:1px solid var(--input-border);
+  border-radius:14px;padding:13px 16px;font-size:15px;color:var(--text);
+  font-family:inherit;outline:none;transition:border-color .2s;
+  -webkit-user-select:text;user-select:text;
 }
-.form-input:focus{border-color:var(–accent-blue);box-shadow:0 0 0 3px rgba(59,158,255,.15);}
-.form-input::placeholder{color:var(–text-ter);}
+.form-input:focus{border-color:var(--accent-blue);box-shadow:0 0 0 3px rgba(59,158,255,.15);}
+.form-input::placeholder{color:var(--text-ter);}
 .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;}
 
-/* ✅ Fix 4: Tüm tıklanabilir elemanlarda touch-action ve cursor */
-button, [onclick], .tab-item, .water-fab, .drink-card, .drink-other-card,
-.ob-option, .ob-back-btn, .ob-next-btn, .qa-card, .recipe-btn,
-.settings-row, .toggle, .filter-chip, .amount-chip, .auth-btn-primary,
-.auth-social-btn, .market-check-btn, .market-delete-btn, .find-recipe-btn,
-.bar-rings-wrapper, .auth-switch a {
-cursor:pointer;
-touch-action:manipulation;
--webkit-tap-highlight-color:transparent;
+/* ✅ FIX 6: Touch-action manipulation — tüm interaktif elementler */
+button, a, label,
+[onclick], [role="button"],
+.tab-item, .water-fab, .drink-card, .drink-other-card,
+.ob-option, .ob-back-btn, .ob-next-btn,
+.qa-card, .recipe-btn, .recipe-card,
+.settings-row, .toggle, .filter-chip, .amount-chip,
+.auth-btn-primary, .auth-social-btn,
+.market-check-btn, .market-delete-btn, .find-recipe-btn,
+.bar-rings-wrapper, .health-widget, .dash-avatar,
+.auth-switch a, .section-more, .modal-handle {
+  cursor:pointer;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
 }
-/* Tıklama alanı genişletme (özellikle küçük butonlar için) */
-.market-check-btn, .market-delete-btn, .ob-back-btn {
-min-width:44px; min-height:44px;
+/* Apple HIG: minimum 44×44pt tıklama alanı */
+.market-check-btn, .market-delete-btn,
+.ob-back-btn, .auth-social-btn {
+  min-width:44px;min-height:44px;
+  display:inline-flex;align-items:center;justify-content:center;
 }
+/* Butonlar arası yeterli boşluk */
+button { padding:0; border:none; background:transparent; font-family:inherit; }
 @keyframes shimmer{0%{background-position:-400px 0;}100%{background-position:400px 0;}}
 .ai-skeleton{
-background:linear-gradient(90deg,var(–glass) 25%,rgba(255,255,255,.14) 50%,var(–glass) 75%);
-background-size:400px 100%;animation:shimmer 1.4s ease-in-out infinite;
+  background:linear-gradient(90deg,var(--glass) 25%,rgba(255,255,255,.14) 50%,var(--glass) 75%);
+  background-size:400px 100%;animation:shimmer 1.4s ease-in-out infinite;
 }
 
 /* ═══════════════════════════════════════
-ANIMATIONS
+   ANIMATIONS
 ═══════════════════════════════════════ */
 @keyframes fadeSlideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 @keyframes slideInRight{from{opacity:0;transform:translateX(40px);}to{opacity:1;transform:translateX(0);}}
@@ -830,17 +1086,14 @@ ANIMATIONS
 .market-item.removing{animation:slideOut .28s ease forwards;}
 .drink-card.popped{animation:drinkPop .3s cubic-bezier(.34,1.56,.64,1);}
 </style>
-
 </head>
 <body>
 <div id="app">
 
 <!-- ── STATUS BAR ── -->
-
 <!-- status-bar div kaldırıldı — telefonun kendi OS durum çubuğu kullanılıyor -->
 
 <!-- ── NOTIFICATION TOAST ── -->
-
 <div class="notif" id="notif">
   <div class="notif-icon" id="notif-icon">💧</div>
   <div class="notif-text">
@@ -852,7 +1105,6 @@ ANIMATIONS
 <div class="screens">
 
 <!-- ═══ AUTH: LOGIN ═══ -->
-
 <div class="screen auth-screen active" id="screen-auth-login">
   <div class="auth-bg"></div>
   <div class="auth-container">
@@ -881,7 +1133,6 @@ ANIMATIONS
 </div>
 
 <!-- ═══ AUTH: REGISTER ═══ -->
-
 <div class="screen auth-screen" id="screen-auth-register">
   <div class="auth-bg"></div>
   <div class="auth-container">
@@ -910,7 +1161,6 @@ ANIMATIONS
 </div>
 
 <!-- ═══ ONBOARDING ═══ -->
-
 <div class="screen auth-screen" id="screen-onboarding">
   <div class="auth-bg"></div>
   <div class="ob-container">
@@ -971,14 +1221,13 @@ ANIMATIONS
 </div>
 
 <!-- ═══ HOME ═══ -->
-
 <div class="screen" id="screen-home">
   <div class="dash-header">
     <div>
       <div class="dash-greeting" id="greeting-text"></div>
       <div class="dash-name" id="user-display-name">Şef</div>
     </div>
-    <div class="dash-avatar" onclick="switchTab('profile')">👨‍🍳</div>
+    <div class="dash-avatar" onclick="switchTab('profile')" id="dash-avatar-img" style="background-size:cover;background-position:center">👨‍🍳</div>
   </div>
   <div class="health-row">
     <!-- Widget 1: Yakılan Kalori (Apple Health / simülasyon) -->
@@ -1065,7 +1314,6 @@ ANIMATIONS
 </div>
 
 <!-- ═══ FRIDGE ═══ -->
-
 <div class="screen" id="screen-fridge">
   <div class="screen-header">
     <div class="screen-title">🥦 Buzdolabı</div>
@@ -1093,73 +1341,69 @@ ANIMATIONS
 </div>
 
 <!-- ═══ BAR — İÇECEK TAKİBİ ═══ -->
-
 <div class="screen" id="screen-bar">
+
   <!-- Triple Ring Widget -->
   <div class="bar-rings-wrapper" onclick="openModal('bar-report-modal')" id="bar-rings-wrap">
-    <div class="bar-rings-label">Günlük Özet · Rapora Tıkla</div>
+    <div class="bar-rings-label" data-i18n="barRingsLabel">Günlük Özet · Rapora Tıkla</div>
     <div class="bar-rings-svg-wrap">
-      <!-- SVG: Dış=Su, Orta=Kalori, İç=Şeker -->
       <svg width="220" height="220" viewBox="0 0 220 220">
-        <!-- Water ring (outer r=100) -->
-        <circle cx="110" cy="110" r="100" fill="none" stroke="rgba(59,158,255,.15)" stroke-width="14"/>
+        <circle cx="110" cy="110" r="100" fill="none" stroke="rgba(59,158,255,.12)" stroke-width="14"/>
         <circle id="ring-water" cx="110" cy="110" r="100" fill="none"
           stroke="#3b9eff" stroke-width="14" stroke-linecap="round"
           stroke-dasharray="628.3" stroke-dashoffset="628.3"
           transform="rotate(-90 110 110)"
-          style="transition:stroke-dashoffset .6s ease-out,stroke .4s"/>
-        <!-- Calorie ring (mid r=78) -->
-        <circle cx="110" cy="110" r="78" fill="none" stroke="rgba(255,159,10,.15)" stroke-width="14"/>
+          style="transition:stroke-dashoffset .7s cubic-bezier(.34,1.2,.64,1),stroke .4s"/>
+        <circle cx="110" cy="110" r="78" fill="none" stroke="rgba(255,159,10,.12)" stroke-width="14"/>
         <circle id="ring-kcal" cx="110" cy="110" r="78" fill="none"
           stroke="#ff9f0a" stroke-width="14" stroke-linecap="round"
           stroke-dasharray="490" stroke-dashoffset="490"
           transform="rotate(-90 110 110)"
-          style="transition:stroke-dashoffset .6s ease-out"/>
-        <!-- Sugar ring (inner r=56) -->
-        <circle cx="110" cy="110" r="56" fill="none" stroke="rgba(255,55,95,.15)" stroke-width="14"/>
+          style="transition:stroke-dashoffset .7s cubic-bezier(.34,1.2,.64,1)"/>
+        <circle cx="110" cy="110" r="56" fill="none" stroke="rgba(255,55,95,.12)" stroke-width="14"/>
         <circle id="ring-sugar" cx="110" cy="110" r="56" fill="none"
           stroke="#ff375f" stroke-width="14" stroke-linecap="round"
           stroke-dasharray="351.9" stroke-dashoffset="351.9"
           transform="rotate(-90 110 110)"
-          style="transition:stroke-dashoffset .6s ease-out"/>
+          style="transition:stroke-dashoffset .7s cubic-bezier(.34,1.2,.64,1)"/>
       </svg>
       <div class="bar-rings-center">
         <div class="brc-icon">🥤</div>
         <div class="brc-val" id="bar-center-val">0 ml</div>
-        <div class="brc-label" id="bar-center-label">Toplam</div>
+        <div class="brc-label" id="bar-center-label" data-i18n="barTotal">Toplam</div>
       </div>
     </div>
     <div class="bar-rings-legend">
-      <div class="brl-item"><div class="brl-dot" style="background:#3b9eff"></div>Su <span class="brl-value" id="leg-water">0/0ml</span></div>
-      <div class="brl-item"><div class="brl-dot" style="background:#ff9f0a"></div>Kcal <span class="brl-value" id="leg-kcal">0</span></div>
-      <div class="brl-item"><div class="brl-dot" style="background:#ff375f"></div>Şeker <span class="brl-value" id="leg-sugar">0g</span></div>
+      <div class="brl-item"><div class="brl-dot" style="background:#3b9eff"></div><span data-i18n="legendWater">Su</span> <span class="brl-value" id="leg-water">0/0ml</span></div>
+      <div class="brl-item"><div class="brl-dot" style="background:#ff9f0a"></div><span data-i18n="legendKcal">Kcal</span> <span class="brl-value" id="leg-kcal">0</span></div>
+      <div class="brl-item"><div class="brl-dot" style="background:#ff375f"></div><span data-i18n="legendSugar">Şeker</span> <span class="brl-value" id="leg-sugar">0g</span></div>
     </div>
   </div>
 
-  <!-- Drink Grid 3×3 -->
-
-  <div style="padding:0 16px 8px;font-size:12px;font-weight:600;color:var(--text-ter);letter-spacing:.5px;text-transform:uppercase">
-    İçecek Ekle — Uzun Bas: Miktar Seç
+  <!-- Kategori Başlığı -->
+  <div class="bar-cat-header">
+    <span class="bar-cat-label" data-i18n="barGridLabel">İçecek Ekle</span>
+    <span class="bar-cat-hint">👆 Seç  · 👆👆 Miktar</span>
   </div>
-  <div class="drink-grid" id="drink-grid">
+
+  <!-- Kategori Grid 2×2 -->
+  <div class="cat-grid" id="cat-grid">
     <!-- JS ile doldurulacak -->
   </div>
 
-  <!-- Diğer (Custom) Card -->
-
+  <!-- Özel Giriş -->
   <div class="drink-other-card" onclick="openModal('bar-custom-modal')">
-    <div style="font-size:32px">➕</div>
-    <div>
-      <div style="font-size:15px;font-weight:700">Diğer / Özel Giriş</div>
-      <div style="font-size:12px;color:var(--text-sec);margin-top:2px">İçecek adı, ml, kalori ve şeker gir</div>
+    <div class="doc-icon">＋</div>
+    <div class="doc-text">
+      <div class="doc-title" data-i18n="otherDrink">Diğer / Özel Giriş</div>
+      <div class="doc-sub" data-i18n="otherDrinkSub">İçecek adı, ml, kalori ve şeker gir</div>
     </div>
-    <div style="margin-left:auto;font-size:20px;color:var(--text-ter)">›</div>
+    <div class="doc-arrow">›</div>
   </div>
-  <div style="height:16px"></div>
+  <div style="height:20px"></div>
 </div>
 
 <!-- ═══ MARKET ═══ -->
-
 <div class="screen" id="screen-market">
   <div class="screen-header">
     <div class="screen-title">🛒 Market</div>
@@ -1185,70 +1429,147 @@ ANIMATIONS
 </div>
 
 <!-- ═══ PROFILE ═══ -->
-
 <div class="screen" id="screen-profile">
+
+  <!-- ── Hero: Avatar + İsim ── -->
   <div class="profile-hero">
-    <div class="profile-avatar-big">👨‍🍳</div>
-    <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:8px">
-      <input type="text" id="user-input-name" placeholder="Adınızı Girin" style="background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:10px;color:var(--text);text-align:center;font-size:20px;font-weight:600;width:80%;outline:none;font-family:inherit;-webkit-user-select:text;user-select:text">
-      <div class="profile-email" id="profile-email-display">kullanici@eneskitchen.com</div>
+    <!-- FIX 2: Tıklanabilir avatar + kalem ikonu + gizli file input -->
+    <div class="profile-avatar-wrap" onclick="document.getElementById('avatar-file-input').click()">
+      <div class="profile-avatar-big" id="profile-avatar-big">👨‍🍳</div>
+      <div class="profile-avatar-edit">✏️</div>
     </div>
+    <input type="file" id="avatar-file-input" accept="image/*" onchange="handleAvatarChange(event)">
+    <!-- FIX 4: İsim readonly, sadece gösterim -->
+    <div class="profile-name-display" id="profile-name-display">Şef</div>
+    <div class="profile-email" id="profile-email-display">kullanici@eneskitchen.com</div>
     <div class="premium-badge">✨ Premium Üye</div>
   </div>
+
+  <!-- ── İstatistikler (Boy / Kilo / Yaş / BMI) ── -->
+  <!-- FIX 3: Birim seçici (cm/in · kg/lb) -->
+  <div class="unit-toggle-row">
+    <div class="unit-group">
+      <div class="unit-btn active" id="unit-cm" onclick="setHeightUnit('cm')">cm</div>
+      <div class="unit-btn" id="unit-in" onclick="setHeightUnit('in')">in</div>
+    </div>
+    <div class="unit-group">
+      <div class="unit-btn active" id="unit-kg" onclick="setWeightUnit('kg')">kg</div>
+      <div class="unit-btn" id="unit-lb" onclick="setWeightUnit('lb')">lb</div>
+    </div>
+    <div class="unit-group">
+      <div class="unit-btn active" id="unit-ml" onclick="setWaterUnit('ml')">ml</div>
+      <div class="unit-btn" id="unit-oz" onclick="setWaterUnit('oz')">oz</div>
+    </div>
+  </div>
+
   <div class="profile-stats">
-    <div class="stat-item"><input type="number" id="user-height" value="178" class="stat-input" onchange="recalcBMI()"><div class="stat-label">Boy (cm)</div></div>
-    <div class="stat-item"><input type="number" id="user-weight" value="74" class="stat-input" onchange="recalcBMI()"><div class="stat-label">Kilo (kg)</div></div>
-    <div class="stat-item"><input type="number" id="user-age" value="26" class="stat-input"><div class="stat-label">Yaş</div></div>
-    <div class="stat-item"><div class="stat-val" id="user-bmi">23.4</div><div class="stat-label">BMI</div><div id="bmi-badge" class="bmi-badge bmi-ok" style="margin-top:4px">Normal</div></div>
+    <div class="stat-item">
+      <input type="number" id="user-height" value="178" class="stat-input" onchange="recalcBMI()">
+      <div class="stat-label" id="height-unit-label">Boy (cm)</div>
+    </div>
+    <div class="stat-item">
+      <input type="number" id="user-weight" value="74" class="stat-input" onchange="recalcBMI()">
+      <div class="stat-label" id="weight-unit-label">Kilo (kg)</div>
+    </div>
+    <div class="stat-item">
+      <input type="number" id="user-age" value="26" class="stat-input">
+      <div class="stat-label">Yaş</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val" id="user-bmi">23.4</div>
+      <div class="stat-label">BMI</div>
+      <div id="bmi-badge" class="bmi-badge bmi-ok" style="margin-top:4px">Normal</div>
+    </div>
   </div>
+
   <div style="padding:0 16px 16px">
-    <button onclick="handleProfileUpdate()" style="width:100%;background:var(--accent-blue);color:#fff;border:none;padding:15px;border-radius:15px;font-weight:700;font-size:16px;cursor:pointer;font-family:inherit">Değişiklikleri Kaydet</button>
+    <button onclick="handleProfileUpdate(event)" style="width:100%;background:var(--accent-blue);color:#fff;border:none;padding:15px;border-radius:15px;font-weight:700;font-size:16px;cursor:pointer;font-family:inherit;touch-action:manipulation">Değişiklikleri Kaydet</button>
   </div>
-  <div style="margin:0 16px 16px;background:rgba(0,196,255,.08);border:.5px solid rgba(0,196,255,.2);border-radius:20px;padding:16px;display:flex;align-items:center;gap:12px">
+
+  <!-- Su hedefi banner -->
+  <div style="margin:0 16px 20px;background:rgba(0,196,255,.08);border:.5px solid rgba(0,196,255,.2);border-radius:20px;padding:16px;display:flex;align-items:center;gap:12px">
     <div style="font-size:26px">💧</div>
     <div>
-      <div style="font-size:14px;font-weight:600">Günlük Su Hedefin</div>
-      <div style="font-size:13px;color:var(--text-sec);margin-top:2px" id="water-goal-display">Kilo × 35ml hesaplandı</div>
+      <div style="font-size:14px;font-weight:600" data-i18n="waterGoalLabel">Günlük Su Hedefin</div>
+      <div style="font-size:13px;color:var(--text-sec);margin-top:2px" id="water-goal-display">70kg × 35ml = 2.5L / gün</div>
     </div>
   </div>
+
+  <!-- ── Tercihler ── -->
   <div class="settings-section">
-    <div class="settings-label">🤖 AI Entegrasyonu</div>
-    <div class="api-key-section">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
-        <span style="font-size:20px">🔑</span>
-        <div>
-          <div style="font-size:14px;font-weight:600">Gemini API Anahtarı</div>
-          <div style="font-size:11px;color:var(--text-sec);margin-top:2px">Tarayıcınızda şifrelenmiş saklıdır</div>
+    <div class="settings-label" data-i18n="prefTitle">Tercihler</div>
+    <div class="settings-group">
+      <div class="settings-row" onclick="openModal('lang-modal')">
+        <div class="sr-icon" style="background:rgba(59,158,255,.15)">🌐</div>
+        <div class="sr-text"><div class="sr-title" data-i18n="langLabel">Dil</div><div class="sr-sub" id="current-lang-label">Türkçe</div></div>
+        <div class="sr-arrow">›</div>
+      </div>
+      <div class="settings-row" onclick="openModal('theme-modal')">
+        <div class="sr-icon" style="background:rgba(255,214,0,.15)" id="theme-icon">🌙</div>
+        <div class="sr-text"><div class="sr-title" data-i18n="themeLabel">Tema</div><div class="sr-sub" id="current-theme-label">Koyu</div></div>
+        <div class="sr-arrow">›</div>
+      </div>
+      <div class="settings-row">
+        <div class="sr-icon" style="background:rgba(48,209,88,.15)">🍏</div>
+        <div class="sr-text"><div class="sr-title">Apple Health</div><div class="sr-sub">Bağlı</div></div>
+        <div class="toggle" onclick="this.classList.toggle('off')"></div>
+      </div>
+      <div class="settings-row">
+        <div class="sr-icon" style="background:rgba(255,159,10,.15)">🔔</div>
+        <div class="sr-text"><div class="sr-title">Bildirimler</div></div>
+        <div class="toggle" onclick="this.classList.toggle('off')"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FIX 5: Veri & Hesap İşlemleri ── -->
+  <div class="settings-section">
+    <div class="settings-label">Veri</div>
+    <div class="settings-group">
+      <div class="settings-row" onclick="exportData('json')">
+        <div class="sr-icon" style="background:rgba(48,209,88,.15)">📦</div>
+        <div class="sr-text">
+          <div class="sr-title">Verileri Dışa Aktar</div>
+          <div class="sr-sub">JSON formatında indir</div>
         </div>
+        <div class="sr-arrow">›</div>
       </div>
-      <input class="api-key-input" id="gemini-api-key-input" type="password" placeholder="AIzaSy... (Google AI Studio'dan alın)" autocomplete="off">
-      <div style="display:flex;gap:8px">
-        <button onclick="saveApiKey()" style="flex:1;background:linear-gradient(135deg,rgba(255,159,10,.3),rgba(255,159,10,.15));border:.5px solid rgba(255,159,10,.4);border-radius:12px;padding:10px;font-size:13px;font-weight:700;color:#ff9f0a;cursor:pointer;font-family:inherit">Kaydet 🔐</button>
-        <button onclick="testApiKey()" style="flex:1;background:var(--glass);border:.5px solid var(--glass-border);border-radius:12px;padding:10px;font-size:13px;font-weight:600;color:var(--text-sec);cursor:pointer;font-family:inherit">Test Et ⚡</button>
+      <div class="settings-row" onclick="exportData('csv')">
+        <div class="sr-icon" style="background:rgba(48,209,88,.12)">📊</div>
+        <div class="sr-text">
+          <div class="sr-title">CSV Olarak Aktar</div>
+          <div class="sr-sub">Tablolama için</div>
+        </div>
+        <div class="sr-arrow">›</div>
       </div>
-      <div id="api-key-status" style="font-size:12px;text-align:center;color:var(--text-sec);display:none"></div>
     </div>
   </div>
+
+  <!-- ── Hesap ── -->
   <div class="settings-section">
-    <div class="settings-label">Tercihler</div>
+    <div class="settings-label" data-i18n="accountTitle">Hesap</div>
     <div class="settings-group">
-      <div class="settings-row" onclick="openModal('lang-modal')"><div class="sr-icon" style="background:rgba(59,158,255,.15)">🌐</div><div class="sr-text"><div class="sr-title" data-i18n="langLabel">Dil</div><div class="sr-sub" id="current-lang-label">Türkçe</div></div><div class="sr-arrow">›</div></div>
-      <div class="settings-row" onclick="openModal('theme-modal')"><div class="sr-icon" style="background:rgba(255,214,0,.15)" id="theme-icon">🌙</div><div class="sr-text"><div class="sr-title" data-i18n="themeLabel">Tema</div><div class="sr-sub" id="current-theme-label">Koyu</div></div><div class="sr-arrow">›</div></div>
-      <div class="settings-row"><div class="sr-icon" style="background:rgba(48,209,88,.15)">🍏</div><div class="sr-text"><div class="sr-title">Apple Health</div><div class="sr-sub">Bağlı</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
-      <div class="settings-row"><div class="sr-icon" style="background:rgba(255,159,10,.15)">🔔</div><div class="sr-text"><div class="sr-title">Bildirimler</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+      <div class="settings-row" onclick="confirmDeleteAccount()">
+        <div class="sr-icon" style="background:rgba(255,55,95,.1)">🗑</div>
+        <div class="sr-text">
+          <div class="sr-title" style="color:var(--text-sec);font-size:14px">Hesabı Sil</div>
+          <div class="sr-sub">Tüm veriler kalıcı silinir</div>
+        </div>
+        <div class="sr-arrow" style="color:var(--text-ter)">›</div>
+      </div>
     </div>
   </div>
-  <div class="settings-section">
-    <div class="settings-label">Hesap</div>
-    <div class="settings-group">
-      <div class="settings-row" onclick="handleLogout()"><div class="sr-icon" style="background:rgba(255,55,95,.15)">🚪</div><div class="sr-text"><div class="sr-title" style="color:#ff375f">Çıkış Yap</div></div></div>
-    </div>
+
+  <!-- FIX 5: Çıkış Yap — belirgin kırmızı buton -->
+  <div style="padding:0 16px 36px">
+    <button onclick="handleLogout()" class="logout-btn">
+      <span>🚪</span> Çıkış Yap
+    </button>
   </div>
-  <div style="height:20px"></div>
+
 </div>
 
 <!-- ═══ DETAIL (AI Recipe) ═══ -->
-
 <div class="screen" id="screen-detail">
   <div id="detail-loading" style="display:none;padding:40px 20px;text-align:center">
     <div style="font-size:48px;margin-bottom:16px;animation:authPulse 1.5s ease-in-out infinite">🤖</div>
@@ -1282,24 +1603,45 @@ ANIMATIONS
   </div>
 </div>
 
-</div><!-- /screens -->
+<!-- ════ TAB BAR — body içinde, #app DIŞINDA ════ -->
+<!-- Yeni sıra: Home | Fridge | Su-FAB | Bar | Profile -->
+<div class="tab-bar hidden" id="tab-bar">
+  <div class="tab-item active" id="tab-home" onclick="switchTab('home')">
+    <div class="tab-icon">🏠</div><div class="tab-label">Ana Sayfa</div>
+  </div>
+  <div class="tab-item" id="tab-fridge" onclick="switchTab('fridge')">
+    <div class="tab-icon">🥦</div><div class="tab-label">Dolap</div>
+  </div>
+  <div class="water-fab" id="waterBtn" onclick="addWater()">💧</div>
+  <div class="tab-item" id="tab-bar-item" onclick="switchTab('bar')">
+    <div class="tab-icon">🥤</div><div class="tab-label" data-i18n="tabDrinks">İçecekler</div>
+  </div>
+  <div class="tab-item" id="tab-profile" onclick="switchTab('profile')">
+    <div class="tab-icon">👤</div><div class="tab-label">Profil</div>
+  </div>
+</div>
 
 </div><!-- /app -->
 
-<!-- ════ TAB BAR — #app DIŞINDA, body'nin doğrudan çocuğu ════ -->
-
-<!-- ✅ Böylece position:fixed gerçek viewport'a göre çalışır -->
-
-<div class="tab-bar hidden" id="tab-bar">
-  <div class="tab-item active" id="tab-home" onclick="switchTab('home')"><div class="tab-icon">🏠</div><div class="tab-label" data-i18n="tabHome">Ana Sayfa</div></div>
-  <div class="tab-item" id="tab-fridge" onclick="switchTab('fridge')"><div class="tab-icon">🥦</div><div class="tab-label" data-i18n="tabFridge">Dolap</div></div>
-  <div class="water-fab" id="waterBtn" onclick="addWater()">💧</div>
-  <div class="tab-item" id="tab-bar-btn" onclick="switchTab('bar')"><div class="tab-icon">🥤</div><div class="tab-label" data-i18n="tabBar">Bar</div></div>
-  <div class="tab-item" id="tab-profile" onclick="switchTab('profile')"><div class="tab-icon">👤</div><div class="tab-label" data-i18n="tabProfile">Profil</div></div>
+<!-- ════ MODAL: KATEGORİ ALT MENÜSÜ ════ -->
+<div class="modal-overlay" id="cat-menu-modal" onclick="closeModalOuter(event,'cat-menu-modal')">
+  <div class="modal-sheet" id="cat-menu-sheet">
+    <div class="modal-handle"></div>
+    <!-- Kategori başlığı -->
+    <div class="subdrink-header">
+      <div class="subdrink-cat-emoji" id="cmsub-emoji">☕</div>
+      <div>
+        <div class="subdrink-cat-name" id="cmsub-name">Kahve</div>
+        <div class="subdrink-cat-count" id="cmsub-count">6 içecek</div>
+      </div>
+    </div>
+    <!-- İçecek listesi -->
+    <div class="subdrink-list" id="subdrink-list"></div>
+    <div style="height:8px"></div>
+  </div>
 </div>
 
 <!-- ════ MODAL: LANG ════ -->
-
 <div class="modal-overlay" id="lang-modal" onclick="closeModalOuter(event,'lang-modal')">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
@@ -1314,7 +1656,6 @@ ANIMATIONS
 </div>
 
 <!-- ════ MODAL: THEME ════ -->
-
 <div class="modal-overlay" id="theme-modal" onclick="closeModalOuter(event,'theme-modal')">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
@@ -1327,7 +1668,6 @@ ANIMATIONS
 </div>
 
 <!-- ════ MODAL: BAR — MİKTAR SEÇİCİ ════ -->
-
 <div class="modal-overlay" id="bar-amount-modal" onclick="closeModalOuter(event,'bar-amount-modal')">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
@@ -1344,7 +1684,6 @@ ANIMATIONS
 </div>
 
 <!-- ════ MODAL: BAR — ÖZEL GİRİŞ ════ -->
-
 <div class="modal-overlay" id="bar-custom-modal" onclick="closeModalOuter(event,'bar-custom-modal')">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
@@ -1373,7 +1712,6 @@ ANIMATIONS
 </div>
 
 <!-- ════ MODAL: BAR — GÜNLÜK RAPOR ════ -->
-
 <div class="modal-overlay" id="bar-report-modal" onclick="closeModalOuter(event,'bar-report-modal')">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
@@ -1411,22 +1749,101 @@ const LS_API = 'ek_gemini_key';
 const LS_BAR = 'ek_bar_data';
 
 /* ══════════════════════════════════════════════════
-   BAR — IÇECEK VERİSİ (100ml başına besin değerleri)
+   BAR — KATEGORİ & İÇECEK VERİSİ
+   names: {tr, en, es, ar, ru}
+   100ml başına besin değerleri
 ══════════════════════════════════════════════════ */
-const DRINKS = [
-  { id:'water',  emoji:'💧', name:'Su',           ml100kcal:0,   ml100sugar:0    },
-  { id:'cola',   emoji:'🥤', name:'Kola',          ml100kcal:42,  ml100sugar:10.6 },
-  { id:'coffee', emoji:'☕', name:'Kahve',          ml100kcal:2,   ml100sugar:0    },
-  { id:'tea',    emoji:'🍵', name:'Çay',            ml100kcal:1,   ml100sugar:0    },
-  { id:'juice',  emoji:'🧃', name:'Meyve Suyu',    ml100kcal:45,  ml100sugar:10   },
-  { id:'ayran',  emoji:'🥛', name:'Ayran',         ml100kcal:35,  ml100sugar:3    },
-  { id:'beer',   emoji:'🍺', name:'Bira',          ml100kcal:43,  ml100sugar:2.6  },
-  { id:'wine',   emoji:'🍷', name:'Şarap',         ml100kcal:85,  ml100sugar:0.6  },
-  { id:'energy', emoji:'⚡', name:'Enerji İçeceği',ml100kcal:45,  ml100sugar:11   },
+const DRINK_CATEGORIES = [
+  {
+    id:'daily',
+    emoji:'💧',
+    color:'rgba(59,158,255,.18)',
+    borderColor:'rgba(59,158,255,.35)',
+    glowColor:'rgba(59,158,255,.5)',
+    names:{ tr:'Günlük', en:'Daily', es:'Diario', ar:'يومي', ru:'Ежедневно' },
+    drinks:[
+      { id:'water',    emoji:'💧', names:{tr:'Su',            en:'Water',          es:'Agua',              ar:'ماء',        ru:'Вода'},         ml100kcal:0,   ml100sugar:0   },
+      { id:'blacktea', emoji:'🍵', names:{tr:'Siyah Çay',     en:'Black Tea',      es:'Té Negro',          ar:'شاي أسود',   ru:'Чёрный чай'},   ml100kcal:1,   ml100sugar:0   },
+      { id:'milk',     emoji:'🥛', names:{tr:'Süt',           en:'Milk',           es:'Leche',             ar:'حليب',       ru:'Молоко'},       ml100kcal:61,  ml100sugar:4.8 },
+      { id:'ayran',    emoji:'🫙', names:{tr:'Ayran',         en:'Ayran',          es:'Ayran',             ar:'عيران',      ru:'Айран'},        ml100kcal:35,  ml100sugar:3   },
+      { id:'orangej',  emoji:'🍊', names:{tr:'Portakal Suyu', en:'Orange Juice',   es:'Jugo de Naranja',   ar:'عصير برتقال',ru:'Апельс. сок'},  ml100kcal:45,  ml100sugar:8.4 },
+      { id:'applej',   emoji:'🍎', names:{tr:'Elma Suyu',     en:'Apple Juice',    es:'Jugo de Manzana',   ar:'عصير تفاح',  ru:'Яблочный сок'}, ml100kcal:46,  ml100sugar:9.6 },
+      { id:'lemon',    emoji:'🍋', names:{tr:'Limonata',      en:'Lemonade',       es:'Limonada',          ar:'ليمونادة',   ru:'Лимонад'},      ml100kcal:25,  ml100sugar:6   },
+      { id:'icetea',   emoji:'🧊', names:{tr:'Ice Tea',       en:'Iced Tea',       es:'Té Frío',           ar:'شاي مثلج',   ru:'Холодный чай'}, ml100kcal:35,  ml100sugar:8   },
+    ]
+  },
+  {
+    id:'coffee',
+    emoji:'☕',
+    color:'rgba(180,120,60,.2)',
+    borderColor:'rgba(180,120,60,.4)',
+    glowColor:'rgba(200,140,80,.5)',
+    names:{ tr:'Kahve', en:'Coffee', es:'Café', ar:'قهوة', ru:'Кофе' },
+    drinks:[
+      { id:'filter',   emoji:'☕', names:{tr:'Filtre Kahve',  en:'Filter Coffee',  es:'Café de Filtro',    ar:'قهوة فلتر',  ru:'Фильтр-кофе'}, ml100kcal:2,   ml100sugar:0   },
+      { id:'americano',emoji:'🖤', names:{tr:'Americano',     en:'Americano',      es:'Americano',         ar:'أمريكانو',   ru:'Американо'},    ml100kcal:5,   ml100sugar:0   },
+      { id:'latte',    emoji:'🥛', names:{tr:'Latte',         en:'Latte',          es:'Latte',             ar:'لاتيه',      ru:'Латте'},        ml100kcal:60,  ml100sugar:5   },
+      { id:'cappucc',  emoji:'☁️', names:{tr:'Cappuccino',    en:'Cappuccino',     es:'Capuchino',         ar:'كابتشينو',   ru:'Капучино'},     ml100kcal:55,  ml100sugar:4.5 },
+      { id:'turkish',  emoji:'🫖', names:{tr:'Türk Kahvesi',  en:'Turkish Coffee', es:'Café Turco',        ar:'قهوة تركية', ru:'Турецкий кофе'},ml100kcal:4,   ml100sugar:0   },
+      { id:'mocha',    emoji:'🍫', names:{tr:'Mocha',         en:'Mocha',          es:'Moca',              ar:'موكا',       ru:'Мокко'},        ml100kcal:72,  ml100sugar:8   },
+    ]
+  },
+  {
+    id:'alcohol',
+    emoji:'🍺',
+    color:'rgba(255,196,0,.15)',
+    borderColor:'rgba(255,196,0,.3)',
+    glowColor:'rgba(255,196,0,.45)',
+    names:{ tr:'Alkol', en:'Alcohol', es:'Alcohol', ar:'كحول', ru:'Алкоголь' },
+    drinks:[
+      { id:'beer',     emoji:'🍺', names:{tr:'Bira',          en:'Beer',           es:'Cerveza',           ar:'بيرة',       ru:'Пиво'},         ml100kcal:43,  ml100sugar:2.6 },
+      { id:'wine',     emoji:'🍷', names:{tr:'Şarap',         en:'Wine',           es:'Vino',              ar:'نبيذ',       ru:'Вино'},         ml100kcal:85,  ml100sugar:0.6 },
+      { id:'whiskey',  emoji:'🥃', names:{tr:'Viski',         en:'Whiskey',        es:'Whisky',            ar:'ويسكي',      ru:'Виски'},        ml100kcal:250, ml100sugar:0   },
+      { id:'raki',     emoji:'🥛', names:{tr:'Rakı',          en:'Raki',           es:'Raki',              ar:'عرق',        ru:'Раки'},         ml100kcal:230, ml100sugar:0   },
+      { id:'vodka',    emoji:'🫗', names:{tr:'Votka',         en:'Vodka',          es:'Vodka',             ar:'فودكا',      ru:'Водка'},        ml100kcal:231, ml100sugar:0   },
+    ]
+  },
+  {
+    id:'cocktails',
+    emoji:'🍹',
+    color:'rgba(255,55,160,.18)',
+    borderColor:'rgba(255,55,160,.3)',
+    glowColor:'rgba(255,55,160,.45)',
+    names:{ tr:'Kokteyller', en:'Cocktails', es:'Cócteles', ar:'كوكتيلات', ru:'Коктейли' },
+    drinks:[
+      { id:'mojito',   emoji:'🌿', names:{tr:'Mojito',        en:'Mojito',         es:'Mojito',            ar:'موهيتو',     ru:'Мохито'},       ml100kcal:68,  ml100sugar:9   },
+      { id:'marg',     emoji:'🍋', names:{tr:'Margarita',     en:'Margarita',      es:'Margarita',         ar:'مارغريتا',   ru:'Маргарита'},    ml100kcal:160, ml100sugar:9   },
+      { id:'cosmo',    emoji:'🩷', names:{tr:'Cosmopolitan',  en:'Cosmopolitan',   es:'Cosmopolitan',      ar:'كوزموبوليتان',ru:'Космополитен'}, ml100kcal:150, ml100sugar:8   },
+      { id:'aperol',   emoji:'🍊', names:{tr:'Aperol Spritz', en:'Aperol Spritz',  es:'Aperol Spritz',     ar:'أبيرول سبريتز',ru:'Апероль'},    ml100kcal:80,  ml100sugar:5   },
+      { id:'gintonic', emoji:'🧊', names:{tr:'Gin Tonic',     en:'Gin & Tonic',    es:'Gin Tónica',        ar:'جين توني',   ru:'Джин-тоник'},   ml100kcal:83,  ml100sugar:2   },
+      { id:'pina',     emoji:'🍍', names:{tr:'Pina Colada',   en:'Piña Colada',    es:'Piña Colada',       ar:'بيناكولادا', ru:'Пина-колада'},  ml100kcal:120, ml100sugar:12  },
+      { id:'longisle', emoji:'🍋', names:{tr:'Long Island',   en:'Long Island Ice Tea',es:'Long Island',   ar:'لونغ آيلاند', ru:'Лонг-Айленд'}, ml100kcal:160, ml100sugar:4   },
+      { id:'espmartini',emoji:'☕',names:{tr:'Espresso Martini',en:'Espresso Martini',es:'Martini Espresso',ar:'إسبريسو مارتيني',ru:'Эспрессо Мартини'},ml100kcal:115,ml100sugar:6},
+      { id:'whsour',   emoji:'🍋', names:{tr:'Whiskey Sour',  en:'Whiskey Sour',   es:'Whisky Sour',       ar:'ويسكي ساور', ru:'Виски Сауэр'},  ml100kcal:155, ml100sugar:7   },
+      { id:'moscmule', emoji:'🫚', names:{tr:'Moscow Mule',   en:'Moscow Mule',    es:'Moscow Mule',       ar:'موسكو ميول', ru:'Московский мул'},ml100kcal:78, ml100sugar:8   },
+    ]
+  }
 ];
-const RING_WATER_MAX  = () => targetMl;  // dynamic
-const RING_KCAL_MAX   = 500;  // drinks daily max kcal target
-const RING_SUGAR_MAX  = 50;   // WHO günlük serbest şeker sınırı (g)
+
+/* Helper: dile göre içecek adını döndür */
+function drinkName(drink) {
+  return drink.names?.[activeLang] || drink.names?.tr || drink.name || '';
+}
+function catName(cat) {
+  return cat.names?.[activeLang] || cat.names?.tr || '';
+}
+
+/* Tüm içeceklere düzleştirilmiş erişim */
+function findDrinkById(id) {
+  for (const cat of DRINK_CATEGORIES)
+    for (const d of cat.drinks)
+      if (d.id === id) return d;
+  return null;
+}
+
+const RING_WATER_MAX  = () => targetMl;
+const RING_KCAL_MAX   = 500;
+const RING_SUGAR_MAX  = 50;
 const LONG_PRESS_MS   = 600;
 
 /* Bar daily state */
@@ -1480,17 +1897,6 @@ function scheduleMidnightReset() {
 }
 
 /* ══════════════════════════════════════════════════
-   GLOBAL HATA YAKALAYICI — "Script Error" debug
-══════════════════════════════════════════════════ */
-window.onerror = function(msg, src, line, col, err) {
-  console.error('🚨 JS Hatası:', msg, '| Kaynak:', src, '| Satır:', line, '| Detay:', err?.stack || err);
-  return false;
-};
-window.addEventListener('unhandledrejection', e => {
-  console.error('🚨 Promise Hatası:', e.reason);
-});
-
-/* ══════════════════════════════════════════════════
    BOOT
 ══════════════════════════════════════════════════ */
 function boot() {
@@ -1505,6 +1911,7 @@ function boot() {
   // status-clock kaldırıldı — OS saatini kullanıyoruz
   loadBarData(); buildDrinkGrid(); updateBarRings();
   renderMarketList();
+  loadSavedAvatar(); // profil fotoğrafını boot'ta yükle
   appUser = loadUser();
   if (appUser) { applyUserToApp(appUser); enterApp(); }
   else { showOnly('screen-auth-login'); document.getElementById('tab-bar').classList.add('hidden'); }
@@ -1513,12 +1920,23 @@ function boot() {
   setTimeout(() => startHealthSimulation(), 800);
 }
 
+// Global hata yakalayıcı — Script Error detayını açar
+window.onerror = function(msg, url, line, col, err) {
+  console.error('[EnesKitchen]', msg, '| Satır:', line, '| Detay:', err);
+  return false; // hatayı gizleme
+};
+window.addEventListener('unhandledrejection', e => {
+  console.error('[EnesKitchen Promise]', e.reason);
+});
+
 function applyThemeToDOM(r) {
-  // ✅ Fix 3: data-theme html, body ve #app üçüne birden uygulanıyor
-  // CSS değişkenleri [data-theme="dark/light"] selector'larıyla eşleşiyor
-  [document.documentElement, document.body, document.getElementById('app')].forEach(el => {
-    if (el) el.setAttribute('data-theme', r);
-  });
+  // Tüm olası container'lara set et — hangisinde CSS vars tanımlı hangisine inherit ederse
+  document.documentElement.setAttribute('data-theme', r);
+  document.body.setAttribute('data-theme', r);
+  const app = document.getElementById('app');
+  if (app) app.setAttribute('data-theme', r);
+  // Modaller body dışında olduğunda da yakalamak için:
+  document.querySelectorAll('.modal-overlay').forEach(m => m.setAttribute('data-theme', r));
 }
 
 /* ══════════════════════════════════════════════════
@@ -1609,53 +2027,221 @@ function obFinish() {
 /* ══════════════════════════════════════════════════
    APPLY USER
 ══════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════
+   PROFILE — BİRİM SİSTEMİ
+══════════════════════════════════════════════════ */
+let heightUnit = 'cm';  // 'cm' | 'in'
+let weightUnit = 'kg';  // 'kg' | 'lb'
+let waterUnit  = 'ml';  // 'ml' | 'oz'
+
+function setHeightUnit(u) {
+  const inp = document.getElementById('user-height');
+  const val = parseFloat(inp.value) || 0;
+  if (u === heightUnit) return;
+  if (u === 'in' && heightUnit === 'cm') inp.value = +(val / 2.54).toFixed(1);
+  if (u === 'cm' && heightUnit === 'in') inp.value = +(val * 2.54).toFixed(0);
+  heightUnit = u;
+  document.getElementById('unit-cm').classList.toggle('active', u === 'cm');
+  document.getElementById('unit-in').classList.toggle('active', u === 'in');
+  document.getElementById('height-unit-label').textContent = `Boy (${u})`;
+  recalcBMI();
+}
+
+function setWeightUnit(u) {
+  const inp = document.getElementById('user-weight');
+  const val = parseFloat(inp.value) || 0;
+  if (u === weightUnit) return;
+  if (u === 'lb' && weightUnit === 'kg') inp.value = +(val * 2.20462).toFixed(1);
+  if (u === 'kg' && weightUnit === 'lb') inp.value = +(val / 2.20462).toFixed(1);
+  weightUnit = u;
+  document.getElementById('unit-kg').classList.toggle('active', u === 'kg');
+  document.getElementById('unit-lb').classList.toggle('active', u === 'lb');
+  document.getElementById('weight-unit-label').textContent = `Kilo (${u})`;
+  recalcBMI();
+}
+
+function setWaterUnit(u) {
+  waterUnit = u;
+  document.getElementById('unit-ml').classList.toggle('active', u === 'ml');
+  document.getElementById('unit-oz').classList.toggle('active', u === 'oz');
+  updateWaterGoalDisplay();
+}
+
+function updateWaterGoalDisplay() {
+  const el = document.getElementById('water-goal-display');
+  if (!el) return;
+  const w = appUser?.weight || 70;
+  const mlGoal = w * 35;
+  if (waterUnit === 'oz') {
+    el.textContent = `${w}kg × 1.2oz = ${(mlGoal / 29.5735).toFixed(0)} fl oz / gün`;
+  } else {
+    el.textContent = `${w}kg × 35ml = ${(mlGoal/1000).toFixed(1)}L / gün`;
+  }
+  const wt = document.getElementById('water-target-label');
+  if (wt) wt.textContent = waterUnit === 'oz'
+    ? `/${(mlGoal/29.5735).toFixed(0)}oz`
+    : `/${(mlGoal/1000).toFixed(1)}L`;
+}
+
+function recalcBMI() {
+  let h = parseFloat(document.getElementById('user-height').value) || 0;
+  let w = parseFloat(document.getElementById('user-weight').value) || 0;
+  // cm/kg'ye çevir hesap için
+  const hCm = heightUnit === 'in' ? h * 2.54 : h;
+  const wKg = weightUnit === 'lb' ? w / 2.20462 : w;
+  if (!hCm || !wKg) return;
+  const bmi = +(wKg / ((hCm/100) ** 2)).toFixed(1);
+  renderBMI(bmi);
+  targetMl = wKg * 35;
+  updateWaterGoalDisplay();
+  if (appUser) {
+    appUser.height = hCm; appUser.weight = wKg;
+    appUser.bmi = bmi; appUser.waterTarget = targetMl;
+    saveUser();
+  }
+  updateBarRings();
+}
+
+function handleProfileUpdate(evt) {
+  const h = parseFloat(document.getElementById('user-height').value);
+  const w = parseFloat(document.getElementById('user-weight').value);
+  const age = parseInt(document.getElementById('user-age').value);
+  const hCm = heightUnit === 'in' ? h * 2.54 : h;
+  const wKg = weightUnit === 'lb' ? w / 2.20462 : w;
+  if (appUser) {
+    if (hCm) appUser.height = hCm;
+    if (wKg) appUser.weight = wKg;
+    if (age) appUser.age = age;
+  }
+  recalcBMI();
+  if (appUser) saveUser();
+  const btn = evt.currentTarget, orig = btn.textContent;
+  btn.textContent = '✓ Kaydedildi!'; btn.style.background = 'var(--accent-green)';
+  setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 1500);
+}
+
+/* ══════════════════════════════════════════════════
+   PROFILE — FOTOĞRAF (FIX 2)
+══════════════════════════════════════════════════ */
+const LS_AVATAR = 'ek_avatar';
+
+function handleAvatarChange(e) {
+  const file = e.target.files?.[0];
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    const base64 = evt.target.result;
+    setAvatarImage(base64);
+    try { localStorage.setItem(LS_AVATAR, base64); } catch(err) {}
+  };
+  reader.readAsDataURL(file);
+}
+
+function setAvatarImage(src) {
+  const wrap = document.getElementById('profile-avatar-big');
+  if (!wrap) return;
+  if (src) {
+    wrap.innerHTML = `<img src="${src}" alt="Profil">`;
+    // Header mini avatar
+    const mini = document.getElementById('dash-avatar-img');
+    if (mini) {
+      mini.textContent = '';
+      mini.style.backgroundImage = `url(${src})`;
+      mini.style.backgroundSize = 'cover';
+      mini.style.backgroundPosition = 'center';
+    }
+  } else {
+    wrap.innerHTML = '👨‍🍳';
+    const mini = document.getElementById('dash-avatar-img');
+    if (mini) { mini.textContent = '👨‍🍳'; mini.style.backgroundImage = ''; }
+  }
+}
+
+function loadSavedAvatar() {
+  try {
+    const saved = localStorage.getItem(LS_AVATAR);
+    if (saved) setAvatarImage(saved);
+  } catch(e) {}
+}
+
+/* ══════════════════════════════════════════════════
+   PROFILE — VERİ AKTARIMI (FIX 5)
+══════════════════════════════════════════════════ */
+function exportData(format) {
+  const data = {
+    user: appUser,
+    barEntries,
+    barTotals,
+    marketItems,
+    exportDate: new Date().toISOString(),
+    version: 'EnesKitchen v7'
+  };
+  if (format === 'json') {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+    downloadBlob(blob, 'enes_kitchen_export.json');
+  } else if (format === 'csv') {
+    const header = 'İçecek,ml,Kalori,Şeker(g),Saat\n';
+    const rows = barEntries.map(e =>
+      `"${e.name}",${e.ml},${e.kcal},${e.sugar},"${e.time}"`
+    ).join('\n');
+    const blob = new Blob(['\ufeff' + header + rows], { type:'text/csv;charset=utf-8' });
+    downloadBlob(blob, 'enes_kitchen_icecekler.csv');
+  }
+  toast('📦', format.toUpperCase() + ' hazır', 'Dosya indiriliyor...');
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function confirmDeleteAccount() {
+  if (!confirm('⚠️ Tüm veriler kalıcı olarak silinecek. Emin misin?')) return;
+  try {
+    localStorage.removeItem('eneskitchen_user');
+    localStorage.removeItem('ek_bar_data');
+    localStorage.removeItem('ek_avatar');
+    localStorage.removeItem('ek_theme');
+    localStorage.removeItem('ek_lang');
+  } catch(e) {}
+  handleLogout();
+  toast('🗑', 'Hesap silindi', 'Tüm veriler temizlendi');
+}
+
 function applyUserToApp(user) {
   if (!user) return;
   targetMl = user.waterTarget || (user.weight ? user.weight*35 : 2500);
   const $ = id => document.getElementById(id);
-  if ($('user-input-name')) $('user-input-name').value = user.name||'';
-  if ($('user-height'))   $('user-height').value   = user.height||178;
-  if ($('user-weight'))   $('user-weight').value   = user.weight||74;
-  if ($('user-age'))      $('user-age').value       = user.age||26;
-  renderBMI(user.bmi||+((user.weight||74)/(((user.height||178)/100)**2)).toFixed(1));
-  if ($('water-goal-display')) $('water-goal-display').textContent = `${user.weight||70}kg × 35ml = ${(targetMl/1000).toFixed(1)}L / gün`;
-  if ($('water-target-label')) $('water-target-label').textContent = `/${(targetMl/1000).toFixed(1)}L`;
-  if ($('profile-email-display')) $('profile-email-display').textContent = user.email||'premium@eneskitchen.com';
-  $('user-display-name').textContent = user.name||'Şef';
+  // FIX 4: İsim readonly — sadece gösterim alanları güncellenir
+  if ($('profile-name-display')) $('profile-name-display').textContent = user.name || 'Şef';
+  if ($('user-display-name'))    $('user-display-name').textContent    = user.name || 'Şef';
+  if ($('user-height'))   $('user-height').value   = user.height || 178;
+  if ($('user-weight'))   $('user-weight').value   = user.weight || 74;
+  if ($('user-age'))      $('user-age').value       = user.age   || 26;
+  renderBMI(user.bmi || +((user.weight||74) / (((user.height||178)/100)**2)).toFixed(1));
+  updateWaterGoalDisplay();
+  if ($('profile-email-display')) $('profile-email-display').textContent = user.email || 'premium@eneskitchen.com';
+  // Kayıtlı avatar yükle
+  loadSavedAvatar();
   updateGreeting();
 }
-function renderBMI(bmi) {
-  const el = document.getElementById('user-bmi'), bdg = document.getElementById('bmi-badge'); if (!el) return;
-  el.textContent = bmi;
-  let cls='bmi-ok',label='Normal';
-  if(bmi<18.5){cls='bmi-low';label='Zayıf';}else if(bmi<25){cls='bmi-ok';label='Normal';}else if(bmi<30){cls='bmi-high';label='Fazla Kilolu';}else{cls='bmi-vhigh';label='Obez';}
-  if(bdg){bdg.className='bmi-badge '+cls;bdg.textContent=label;}
-}
-function recalcBMI() {
-  const h=parseFloat(document.getElementById('user-height').value), w=parseFloat(document.getElementById('user-weight').value);
-  if(h&&w){const bmi=+(w/((h/100)**2)).toFixed(1); renderBMI(bmi); targetMl=w*35;
-    document.getElementById('water-goal-display').textContent=`${w}kg × 35ml = ${(targetMl/1000).toFixed(1)}L / gün`;
-    document.getElementById('water-target-label').textContent=`/${(targetMl/1000).toFixed(1)}L`;
-    if(appUser){appUser.height=h;appUser.weight=w;appUser.bmi=bmi;appUser.waterTarget=targetMl;saveUser();}
-    updateBarRings();
-  }
-}
-function handleProfileUpdate() {
-  const name = document.getElementById('user-input-name').value.trim();
-  const h = parseFloat(document.getElementById('user-height').value);
-  const w = parseFloat(document.getElementById('user-weight').value);
-  const age = parseInt(document.getElementById('user-age').value);
-  if(appUser){if(name)appUser.name=name;if(h)appUser.height=h;if(w)appUser.weight=w;if(age)appUser.age=age;}
-  recalcBMI();
-  if(appUser){saveUser();document.getElementById('user-display-name').textContent=appUser.name;}
-  const btn=event.currentTarget,orig=btn.textContent;
-  btn.textContent='✓ Kaydedildi!';btn.style.background='var(--accent-green)';
-  setTimeout(()=>{btn.textContent=orig;btn.style.background='';},1500);
-}
 
-/* ══════════════════════════════════════════════════
-   ENTER APP / NAVIGATION
-══════════════════════════════════════════════════ */
+function renderBMI(bmi) {
+  const el = document.getElementById('user-bmi');
+  const bdg = document.getElementById('bmi-badge');
+  if (!el) return;
+  el.textContent = bmi;
+  let cls='bmi-ok', label='Normal';
+  if (bmi < 18.5)      { cls='bmi-low';   label='Zayıf'; }
+  else if (bmi < 25)   { cls='bmi-ok';    label='Normal'; }
+  else if (bmi < 30)   { cls='bmi-high';  label='Fazla Kilolu'; }
+  else                 { cls='bmi-vhigh'; label='Obez'; }
+  if (bdg) { bdg.className='bmi-badge '+cls; bdg.textContent=label; }
+}
 const AUTH_SCREENS = ['screen-auth-login','screen-auth-register','screen-onboarding'];
 
 // history.state ile aktif ekran takibi
@@ -1685,14 +2271,15 @@ function enterApp() {
 function switchTab(name) {
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
-  const s  = document.getElementById('screen-'+name);
-  // 'tab-bar' id'si artık container div'e ait; bar sekmesi tab-bar-btn id'sini kullanıyor
-  const tb = document.getElementById(name==='bar' ? 'tab-bar-btn' : 'tab-'+name);
-  if(s)  s.classList.add('active');
-  if(tb) tb.classList.add('active');
+  const s = document.getElementById('screen-' + name);
+  // 'bar' tab item: id="tab-bar-item" (tab-bar ID is the container)
+  const tbId = name === 'bar' ? 'tab-bar-item' : 'tab-' + name;
+  const tb = document.getElementById(tbId);
+  if (s) s.classList.add('active');
+  if (tb) tb.classList.add('active');
   document.getElementById('tab-bar').classList.remove('hidden');
-  if(name==='profile') loadApiKeyToInput();
-  if(name==='bar')     updateBarRings();
+  if (name === 'profile') loadApiKeyToInput();
+  if (name === 'bar') updateBarRings();
   pushNav(name);
 }
 
@@ -1700,17 +2287,17 @@ function switchTab(name) {
 window.addEventListener('popstate', (e) => {
   const state = e.state;
   const target = state?.backTarget || state?.screen || 'home';
-  // Auth ekranlarında değilsek direkt home'a yönlendir
   if (AUTH_SCREENS.includes('screen-' + target)) return;
   const safe = ['home','fridge','bar','market','profile'].includes(target) ? target : 'home';
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
-  const s=document.getElementById('screen-'+safe);
-  const tb=document.getElementById(safe==='bar' ? 'tab-bar-btn' : 'tab-'+safe);
-  if(s) s.classList.add('active');
-  if(tb) tb.classList.add('active');
+  const s = document.getElementById('screen-' + safe);
+  const tbId = safe === 'bar' ? 'tab-bar-item' : 'tab-' + safe;
+  const tb = document.getElementById(tbId);
+  if (s) s.classList.add('active');
+  if (tb) tb.classList.add('active');
   document.getElementById('tab-bar').classList.remove('hidden');
-  if(safe==='bar') updateBarRings();
+  if (safe === 'bar') updateBarRings();
 });
 
 /* ══════════════════════════════════════════════════
@@ -1779,14 +2366,16 @@ function updateHealthWidgets() {
 }
 const WATER_MSGS=['Vücudun sana teşekkür ediyor! 💧','Harika gidiyorsun! ✨','Bir yudum sağlık daha. 🚀','Hücrelerin bayram ediyor! 🎉','Zihnin berraklaşıyor! 🧠','Su hayattır! 🌱','Cildin bu habere sevindi! ✨','Hedefe bir adım daha! 🏆','Enerjin tazeleniyor! 🔥','Su içme şampiyonu! 🥇'];
 function addWater() {
-  const ml=250;
+  const ml = 250;
   waterMl += ml;
-  // Hem fab-su hem bar'a su ekle
-  addDrinkEntry({ id:'water', emoji:'💧', name:'Su', ml100kcal:0, ml100sugar:0 }, ml, true /* silent */);
+  // Su içeceğini kategori verisinden bul
+  const waterDrink = findDrinkById('water') || { id:'water', emoji:'💧', names:{tr:'Su',en:'Water',es:'Agua',ar:'ماء',ru:'Вода'}, ml100kcal:0, ml100sugar:0 };
+  addDrinkEntry(waterDrink, ml, true);
   updateWaterUI();
   const btn = document.getElementById('waterBtn');
   btn.classList.add('animate'); setTimeout(()=>btn.classList.remove('animate'),400);
-  toast('💧', '+250ml Su', `Toplam: ${(waterMl/1000).toFixed(1)}L · Hedef: ${(targetMl/1000).toFixed(1)}L`);
+  const target = (targetMl/1000).toFixed(1);
+  toast('💧', `+250ml ${drinkName(waterDrink)}`, `${(waterMl/1000).toFixed(1)}L / ${target}L`);
 }
 function updateWaterUI() {
   const pct=Math.min(waterMl/targetMl,1);
@@ -1797,58 +2386,114 @@ function updateWaterUI() {
 }
 
 /* ══════════════════════════════════════════════════
-   BAR — BUILD DRINK GRID
+   BAR — KATEGORİ GRİDİ OLUŞTUR
 ══════════════════════════════════════════════════ */
-function buildDrinkGrid() {
-  const grid = document.getElementById('drink-grid'); if(!grid) return;
-  grid.innerHTML = '';
-  DRINKS.forEach(drink => {
-    const card = document.createElement('div');
-    card.className = 'drink-card';
-    card.innerHTML = `
-      <div class="dc-emoji">${drink.emoji}</div>
-      <div class="dc-name">${drink.name}</div>
-      <div class="dc-val">${drink.ml100kcal===0&&drink.ml100sugar===0?'0 kcal':drink.ml100kcal+'kcal/100ml'}</div>
-      <div class="lp-ring"></div>`;
+function buildDrinkGrid() { buildCategoryGrid(); } // backward compat alias
 
-    // Per-card long-press state (closure, not card property)
+function buildCategoryGrid() {
+  const grid = document.getElementById('cat-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  DRINK_CATEGORIES.forEach(cat => {
+    const tile = document.createElement('div');
+    tile.className = 'cat-tile';
+    tile.style.setProperty('--cat-color', cat.color);
+    tile.style.setProperty('--cat-glow', cat.glowColor);
+    const drinkCount = cat.drinks.length;
+    const countSuffix = t('drinkCountSuffix') || 'içecek';
+    tile.innerHTML = `
+      <div class="cat-emoji">${cat.emoji}</div>
+      <div class="cat-name">${catName(cat)}</div>
+      <div class="cat-count">${drinkCount} ${countSuffix}</div>
+      <div class="cat-glow"></div>`;
+    tile.addEventListener('click', () => openCategoryMenu(cat));
+    tile.addEventListener('contextmenu', e => e.preventDefault());
+    grid.appendChild(tile);
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   BAR — KATEGORİ ALT MENÜSÜ AÇ
+══════════════════════════════════════════════════ */
+function openCategoryMenu(cat) {
+  document.getElementById('cmsub-emoji').textContent = cat.emoji;
+  document.getElementById('cmsub-name').textContent  = catName(cat);
+  const countSuffix = t('drinkCountSuffix') || 'içecek';
+  document.getElementById('cmsub-count').textContent = `${cat.drinks.length} ${countSuffix}`;
+  // Tint the modal sheet
+  const sheet = document.getElementById('cat-menu-sheet');
+  sheet.style.background = `linear-gradient(180deg, color-mix(in srgb, var(--modal-bg) 90%, ${cat.glowColor} 10%) 0%, var(--modal-bg) 30%)`;
+  buildSubdrinkList(cat);
+  openModal('cat-menu-modal');
+}
+
+function buildSubdrinkList(cat) {
+  const list = document.getElementById('subdrink-list');
+  if (!list) return;
+  list.innerHTML = '';
+
+  cat.drinks.forEach(drink => {
+    const kcalPer100 = drink.ml100kcal;
+    const kcalPer250 = Math.round(kcalPer100 * 2.5);
+    const kcalLabel  = kcalPer100 === 0 ? t('zeroCalorie') || 'Kalori yok' : `${kcalPer100} kcal/100ml · ~${kcalPer250} kcal/250ml`;
+
+    const row = document.createElement('div');
+    row.className = 'subdrink-row';
+
+    row.innerHTML = `
+      <div class="sdr-emoji">${drink.emoji}</div>
+      <div class="sdr-info">
+        <div class="sdr-name">${drinkName(drink)}</div>
+        <div class="sdr-kcal">${kcalLabel}</div>
+      </div>
+      <div class="sdr-action">
+        <div class="sdr-add-btn">＋</div>
+      </div>
+      <div class="sdr-lp-bar"></div>`;
+
+    // Hızlı ekle (+ butonuna tıkla veya satıra kısa dokunuş)
+    const addBtn = row.querySelector('.sdr-add-btn');
+    addBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      doAddDrink(drink, 250, row);
+      closeModal('cat-menu-modal');
+    });
+
+    // Long-press → miktar seçici (doğrudan satıra uzun basınç)
     let lpActivated = false;
     let lpTimer = null;
 
-    // Long press → amount picker (pointerdown başlatır)
-    card.addEventListener('pointerdown', (e) => {
+    row.addEventListener('pointerdown', () => {
       lpActivated = false;
-      card.classList.add('pressing');
-      card.style.setProperty('--lp-duration', LONG_PRESS_MS + 'ms');
+      row.classList.add('pressing');
+      row.style.setProperty('--sdr-lp', LONG_PRESS_MS + 'ms');
       lpTimer = setTimeout(() => {
         lpActivated = true;
-        card.classList.remove('pressing');
-        if (navigator.vibrate) navigator.vibrate(40); // haptic geri bildirim
-        openAmountPicker(drink);
+        row.classList.remove('pressing');
+        if (navigator.vibrate) navigator.vibrate(40);
+        closeModal('cat-menu-modal');
+        // Kısa gecikme: kapanma animasyonundan sonra aç
+        setTimeout(() => openAmountPicker(drink), 220);
       }, LONG_PRESS_MS);
     });
 
-    const cancelLP = () => {
-      clearTimeout(lpTimer);
-      card.classList.remove('pressing');
-    };
-    card.addEventListener('pointerup',    cancelLP);
-    card.addEventListener('pointercancel', cancelLP);
-    card.addEventListener('pointerleave', cancelLP);
-    card.addEventListener('contextmenu',  e => e.preventDefault());
+    const cancelLP = () => { clearTimeout(lpTimer); row.classList.remove('pressing'); };
+    row.addEventListener('pointerup', cancelLP);
+    row.addEventListener('pointercancel', cancelLP);
+    row.addEventListener('pointerleave', cancelLP);
+    row.addEventListener('contextmenu', e => e.preventDefault());
 
-    // Click: long press sonrası gelen ghost click'i engelle
-    card.addEventListener('click', (e) => {
-      if (lpActivated) {
-        lpActivated = false; // sıfırla
-        e.preventDefault();
-        e.stopPropagation();
-        return;
+    // Row tıklaması — add btn'e iletilmiş sayılır, ghost tıklamayı önle
+    row.addEventListener('click', e => {
+      if (lpActivated) { lpActivated = false; return; }
+      // Eğer +buton değil satıra tıkladıysa → 250ml ekle
+      if (!e.target.closest('.sdr-add-btn')) {
+        doAddDrink(drink, 250, row);
+        closeModal('cat-menu-modal');
       }
-      doAddDrink(drink, 250, card);
     });
 
-    grid.appendChild(card);
+    list.appendChild(row);
   });
 }
 
@@ -1858,7 +2503,8 @@ function buildDrinkGrid() {
 function doAddDrink(drink, ml, cardEl) {
   if (cardEl) { cardEl.classList.add('popped'); setTimeout(()=>cardEl.classList.remove('popped'),300); }
   addDrinkEntry(drink, ml, false);
-  toast(drink.emoji, `+${ml}ml ${drink.name}`, buildNutritionLine(drink, ml));
+  const localName = drinkName(drink);
+  toast(drink.emoji, `+${ml}ml ${localName}`, buildNutritionLine(drink, ml));
 }
 
 function addDrinkEntry(drink, ml, silent) {
@@ -1866,7 +2512,9 @@ function addDrinkEntry(drink, ml, silent) {
   const sugar = +(drink.ml100sugar * ml / 100).toFixed(1);
   const now   = new Date();
   const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-  barEntries.push({ drinkId:drink.id, name:drink.name, emoji:drink.emoji, ml, kcal, sugar, time:timeStr });
+  // Lokalize ismi kaydet
+  const localName = drinkName(drink);
+  barEntries.push({ drinkId:drink.id, name:localName, emoji:drink.emoji, ml, kcal, sugar, time:timeStr });
   barTotals.totalMl += ml;
   if (drink.id === 'water') { barTotals.water += ml; waterMl = barTotals.water; }
   barTotals.kcal   = +(barTotals.kcal + kcal).toFixed(1);
@@ -1874,7 +2522,6 @@ function addDrinkEntry(drink, ml, silent) {
   saveBarData();
   updateBarRings();
   updateWaterUI();
-
   updateBarHomeWidget();
 }
 
@@ -1883,8 +2530,8 @@ function buildNutritionLine(drink, ml) {
   const sugar= +(drink.ml100sugar * ml / 100).toFixed(1);
   let parts = [];
   if(kcal>0) parts.push(kcal+' kcal');
-  if(sugar>0) parts.push(sugar+'g şeker');
-  return parts.length ? parts.join(' · ') : 'Sıfır kalori 🌿';
+  if(sugar>0) parts.push(sugar+'g ' + (t('sugarUnit')||'şeker'));
+  return parts.length ? parts.join(' · ') : (t('zeroCalorie')||'Sıfır kalori 🌿');
 }
 
 /* ══════════════════════════════════════════════════
@@ -2063,7 +2710,7 @@ const TRANSLATIONS = {
     noAccount:'Hesabın yok mu?', signUp:'Kayıt Ol',
     hasAccount:'Hesabın var mı?', signIn:'Giriş Yap',
     // Tabs
-    tabHome:'Ana Sayfa', tabFridge:'Dolap', tabBar:'Bar', tabProfile:'Profil',
+    tabHome:'Ana Sayfa', tabFridge:'Dolap', tabBar:'İçecekler', tabDrinks:'İçecekler', tabProfile:'Profil',
     // Home
     greeting_morning:'Günaydın ☀️', greeting_afternoon:'İyi Günler ✨',
     greeting_evening:'İyi Akşamlar 🌙', greeting_night:'İyi Geceler 🌌',
@@ -2071,7 +2718,8 @@ const TRANSLATIONS = {
     viewRecipe:'Tarifi Görüntüle →', fridgeCard:'Buzdolabında Ne Var?',
     fridgeSub:'Malzeme seç, tarif bul', marketCard:'Market Listesi',
     barCard:'İçecek Takibi', barCardEmpty:'Bugün henüz içecek eklenmedi',
-    // Bar
+    drinkCountSuffix:'içecek', zeroCalorie:'Kalori yok 🌿', sugarUnit:'şeker',
+    // Bar screen
     barTitle:'İçecek Takibi', barRingsLabel:'Günlük Özet · Rapora Tıkla',
     barGridLabel:'İçecek Ekle — Uzun Bas: Miktar Seç',
     barTotal:'Toplam', otherDrink:'Diğer / Özel Giriş',
@@ -2120,7 +2768,8 @@ const TRANSLATIONS = {
     loginBtn:'Sign In', registerBtn:'Create Account & Continue →',
     noAccount:"Don't have an account?", signUp:'Sign Up',
     hasAccount:'Already have an account?', signIn:'Sign In',
-    tabHome:'Home', tabFridge:'Fridge', tabBar:'Bar', tabProfile:'Profile',
+    tabHome:'Home', tabFridge:'Fridge', tabBar:'Drinks', tabDrinks:'Drinks', tabProfile:'Profile',
+    drinkCountSuffix:'drinks', zeroCalorie:'Zero calories 🌿', sugarUnit:'sugar',
     greeting_morning:'Good Morning ☀️', greeting_afternoon:'Good Afternoon ✨',
     greeting_evening:'Good Evening 🌙', greeting_night:'Good Night 🌌',
     dailyRecipe:"Today's Recipe", refresh:'Refresh ✨',
@@ -2165,7 +2814,8 @@ const TRANSLATIONS = {
     loginBtn:'Iniciar Sesión', registerBtn:'Registrarse y Continuar →',
     noAccount:'¿No tienes cuenta?', signUp:'Regístrate',
     hasAccount:'¿Ya tienes cuenta?', signIn:'Iniciar Sesión',
-    tabHome:'Inicio', tabFridge:'Nevera', tabBar:'Bar', tabProfile:'Perfil',
+    tabHome:'Inicio', tabFridge:'Nevera', tabBar:'Bebidas', tabDrinks:'Bebidas', tabProfile:'Perfil',
+    drinkCountSuffix:'bebidas', zeroCalorie:'Sin calorías 🌿', sugarUnit:'azúcar',
     greeting_morning:'Buenos Días ☀️', greeting_afternoon:'Buenas Tardes ✨',
     greeting_evening:'Buenas Tardes 🌙', greeting_night:'Buenas Noches 🌌',
     dailyRecipe:'Receta del Día', refresh:'Actualizar ✨',
@@ -2210,7 +2860,8 @@ const TRANSLATIONS = {
     loginBtn:'تسجيل الدخول', registerBtn:'إنشاء حساب والمتابعة →',
     noAccount:'ليس لديك حساب؟', signUp:'سجل الآن',
     hasAccount:'لديك حساب؟', signIn:'تسجيل الدخول',
-    tabHome:'الرئيسية', tabFridge:'الثلاجة', tabBar:'المشروبات', tabProfile:'الملف',
+    tabHome:'الرئيسية', tabFridge:'الثلاجة', tabBar:'مشروبات', tabDrinks:'مشروبات', tabProfile:'الملف',
+    drinkCountSuffix:'مشروبات', zeroCalorie:'بدون سعرات 🌿', sugarUnit:'سكر',
     greeting_morning:'صباح الخير ☀️', greeting_afternoon:'مساء الخير ✨',
     greeting_evening:'مساء النور 🌙', greeting_night:'تصبح على خير 🌌',
     dailyRecipe:'وصفة اليوم', refresh:'تحديث ✨',
@@ -2255,7 +2906,8 @@ const TRANSLATIONS = {
     loginBtn:'Войти', registerBtn:'Создать и Продолжить →',
     noAccount:'Нет аккаунта?', signUp:'Зарегистрироваться',
     hasAccount:'Уже есть аккаунт?', signIn:'Войти',
-    tabHome:'Главная', tabFridge:'Холодильник', tabBar:'Бар', tabProfile:'Профиль',
+    tabHome:'Главная', tabFridge:'Холодильник', tabBar:'Напитки', tabDrinks:'Напитки', tabProfile:'Профиль',
+    drinkCountSuffix:'напитков', zeroCalorie:'Ноль калорий 🌿', sugarUnit:'сахар',
     greeting_morning:'Доброе утро ☀️', greeting_afternoon:'Добрый день ✨',
     greeting_evening:'Добрый вечер 🌙', greeting_night:'Спокойной ночи 🌌',
     dailyRecipe:'Рецепт дня', refresh:'Обновить ✨',
@@ -2303,88 +2955,59 @@ function t(key) {
 
 /* Tüm i18n data-i18n attribute'larını güncelle */
 function applyTranslations() {
-  // 1. data-i18n attribute'lu tüm elementler
+  // data-i18n attribute'lu elementler
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    const attr= el.getAttribute('data-i18n-attr');
+    const attr = el.getAttribute('data-i18n-attr');
     const val = t(key);
+    if (!val) return;
     if (attr) el.setAttribute(attr, val);
     else el.textContent = val;
   });
 
-  // 2. Tab bar etiketleri
-  ['home','fridge','profile'].forEach(id => {
+  // Tab bar labels (dinamik)
+  const tabMap = { home:'tabHome', fridge:'tabFridge', profile:'tabProfile' };
+  Object.entries(tabMap).forEach(([id, key]) => {
     const el = document.querySelector(`#tab-${id} .tab-label`);
-    if (el) el.textContent = t('tab'+id.charAt(0).toUpperCase()+id.slice(1));
+    if (el) el.textContent = t(key);
   });
-  const barTabLabel = document.querySelector('#tab-bar-btn .tab-label');
-  if (barTabLabel) barTabLabel.textContent = t('tabBar');
+  // Drinks tab (özel ID — tab-bar ID'siyle çakışıyordu)
+  const drinkTabLabel = document.querySelector('#tab-bar-item .tab-label');
+  if (drinkTabLabel) drinkTabLabel.textContent = t('tabDrinks');
 
-  // 3. Ana Sayfa statik metinler
-  const dailySectionTitle = document.querySelector('#screen-home .section-title');
-  if (dailySectionTitle) dailySectionTitle.textContent = t('dailyRecipe');
-  const refreshBtn = document.querySelector('#screen-home .section-more');
-  if (refreshBtn) refreshBtn.textContent = t('refresh');
-  const viewBtn = document.querySelector('#screen-home .recipe-btn');
-  if (viewBtn) viewBtn.textContent = t('viewRecipe');
-  // QA kartları
-  document.querySelectorAll('#screen-home .qa-card').forEach(card => {
-    const onclick = card.getAttribute('onclick') || '';
-    const title = card.querySelector('.qa-title');
-    const sub   = card.querySelector('.qa-sub');
-    if (onclick.includes("'fridge'"))  { if(title) title.textContent=t('fridgeCard'); if(sub) sub.textContent=t('fridgeSub'); }
-    else if (onclick.includes("'market'")) { if(title) title.textContent=t('marketCard'); }
-    else if (onclick.includes("'bar'"))    { if(title) title.textContent=t('barCard'); }
+  // ID'ye göre doğrudan güncelleme (data-i18n olmayan statik elementler)
+  const idMap = {
+    'bar-center-label':    'barTotal',
+    'bam-sub':             'howMuch',
+  };
+  Object.entries(idMap).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (el && el.textContent !== '') el.textContent = t(key);
   });
-  const barHomeSub = document.getElementById('bar-home-sub');
-  if (barHomeSub && barHomeSub.textContent === 'Bugün henüz içecek eklenmedi') barHomeSub.textContent = t('barCardEmpty');
 
-  // 4. Bar sekmesi
-  const barRingsLabel = document.querySelector('.bar-rings-label');
-  if (barRingsLabel) barRingsLabel.textContent = t('barRingsLabel');
-  const barCenterLabel = document.getElementById('bar-center-label');
-  if (barCenterLabel) barCenterLabel.textContent = t('barTotal');
-
-  // 5. Fridge
-  const fridgeTitle = document.querySelector('#screen-fridge .screen-title');
-  if (fridgeTitle) fridgeTitle.textContent = t('fridgeTitle');
-  const fridgeSub = document.querySelector('#screen-fridge .screen-sub');
-  if (fridgeSub) fridgeSub.textContent = t('fridgeSub2');
-
-  // 6. Market
-  const marketTitle = document.querySelector('#screen-market .screen-title');
-  if (marketTitle) marketTitle.textContent = t('marketTitle');
-  const marketSub = document.querySelector('#screen-market .screen-sub');
-  if (marketSub) marketSub.textContent = t('marketSub');
-  const marketAddBtn = document.querySelector('#screen-market > div:nth-child(2) button');
-  if (marketAddBtn) marketAddBtn.textContent = t('marketAdd');
-  const marketInput = document.getElementById('market-input');
-  if (marketInput) marketInput.placeholder = t('marketPh');
-
-  // 7. RTL (Arapça)
-  const isRTL = activeLang === 'ar';
-  ['app','body'].forEach(id => {
-    const el = id === 'body' ? document.body : document.getElementById(id);
-    if (el) el.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+  // Placeholder güncellemeleri
+  const phMap = {
+    'custom-name': 'customNamePh',
+    'market-input':'marketPh',
+  };
+  Object.entries(phMap).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (el) el.placeholder = t(key);
   });
-  document.getElementById('app').style.fontFamily = isRTL
-    ? "'SF Arabic','Helvetica Neue',sans-serif"
-    : "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif";
 
-  // 8. Selamlama
+  // Greeting güncelle
   updateGreeting();
-}
 
-function setText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
-function getGreetingKey() {
-  const h = new Date().getHours();
-  if (h>=5  && h<12) return 'greeting_morning';
-  if (h>=12 && h<18) return 'greeting_afternoon';
-  if (h>=18 && h<22) return 'greeting_evening';
-  return 'greeting_night';
+  // RTL desteği (Arapça)
+  const isRTL = activeLang === 'ar';
+  document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+  const app = document.getElementById('app');
+  if (app) {
+    app.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+    app.style.fontFamily = isRTL
+      ? "'SF Arabic','Geeza Pro','Helvetica Neue',sans-serif"
+      : "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif";
+  }
 }
 
 /* ══════════════════════════════════════════════════
@@ -2442,7 +3065,11 @@ function getApiKey(){try{return localStorage.getItem(LS_API)||'';}catch{return '
 function saveApiKey(){const val=document.getElementById('gemini-api-key-input').value.trim();if(!val){showApiStatus('⚠️ Boş bırakılamaz','#ff9f0a');return;}if(val.includes('•')){showApiStatus('ℹ️ Zaten kayıtlı.','var(--text-sec)');return;}try{localStorage.setItem(LS_API,val);showApiStatus('✓ Kaydedildi! AI aktif.','#30d158');}catch{showApiStatus('❌ Kayıt hatası','#ff375f');}}
 function testApiKey(){const key=getApiKey();if(!key){showApiStatus('⚠️ Önce API anahtarı girin','#ff9f0a');return;}showApiStatus('⏳ Test ediliyor...','var(--text-sec)');callGeminiDirect(key,'Sadece "TAMAM" yaz.').then(()=>showApiStatus('✅ Bağlantı başarılı!','#30d158')).catch(()=>showApiStatus('❌ Hata: Anahtarı kontrol edin','#ff375f'));}
 function showApiStatus(msg,color){const el=document.getElementById('api-key-status');el.style.display='block';el.style.color=color;el.textContent=msg;setTimeout(()=>el.style.display='none',4000);}
-function loadApiKeyToInput(){const inp=document.getElementById('gemini-api-key-input'),key=getApiKey();if(inp&&key)inp.value=key.substring(0,8)+'••••••••••••••••••••';}
+function loadApiKeyToInput(){
+  const inp=document.getElementById('gemini-api-key-input');
+  if(!inp) return; // FIX 4: API alanı profil ekranından kaldırıldı
+  const key=getApiKey();if(inp&&key)inp.value=key.substring(0,8)+'••••••••••••••••••••';
+}
 async function callGeminiDirect(apiKey,prompt){const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:.85,maxOutputTokens:1024,responseMimeType:'application/json'}})});if(!res.ok)throw new Error(`Gemini ${res.status}`);const data=await res.json();return parseRecipeJSON(data.candidates?.[0]?.content?.parts?.[0]?.text||'{}');}
 async function callGemini(prompt,fd=false){const key=getApiKey();if(key&&!key.includes('•')){try{const r=await callGeminiDirect(key,prompt);if(r)return r;}catch(e){console.warn('Gemini hatası:',e);}}return getDemoRecipe(fd);}
 function buildRecipePrompt(ingredients,isDaily=false){const dietMap={omnivore:'hepçil',vegetarian:'vejetaryen',vegan:'vegan',keto:'keto'};const diet=appUser?(dietMap[appUser.diet]||'hepçil'):'hepçil';const ctx=isDaily?`${appUser?.name||'kullanıcı'} için bugünün tarifi. ${diet}.`:`Malzemeler: [${ingredients.join(', ')}]. ${diet}.`;return `Türkçe profesyonel şef. ${ctx}\nSADECE JSON:\n{"title":"...","emoji":"🍽️","desc":"...","time":"...","kcal":"...","ingredients":["..."],"steps":["..."],"tip":"..."}`;}
@@ -2517,13 +3144,13 @@ function updateClock(){const now=new Date();document.getElementById('status-cloc
 function updateGreeting(){
   const h=new Date().getHours();
   let key='greeting_night';
-  if(h>=5 &&h<12) key='greeting_morning';
+  if(h>=5&&h<12) key='greeting_morning';
   else if(h>=12&&h<18) key='greeting_afternoon';
   else if(h>=18&&h<22) key='greeting_evening';
-  const greetEl = document.getElementById('greeting-text');
-  if (greetEl) greetEl.textContent = t(key);
-  const nameEl = document.getElementById('user-display-name');
-  if (nameEl) nameEl.textContent = appUser?.name || 'Şef';
+  const el=document.getElementById('greeting-text');
+  if(el) el.textContent=t(key);
+  const nameEl=document.getElementById('user-display-name');
+  if(nameEl) nameEl.textContent=(appUser?.name)||'Şef';
 }
 
 /* ══════════════════════════════════════════════════
@@ -2531,6 +3158,5 @@ function updateGreeting(){
 ══════════════════════════════════════════════════ */
 boot();
 </script>
-
 </body>
 </html>
